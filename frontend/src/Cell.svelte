@@ -2,6 +2,7 @@
 <script>
   export let row = 0;
   export let col = 0;
+  export let selected = false;
   import Piece from "./Piece.svelte";
   import { createEventDispatcher } from "svelte";
 
@@ -19,11 +20,11 @@
 
 <div on:click={clicked} on:keydown={clicked}>
   {#if row % 2 === col % 2}
-    <div class="cell light">
+    <div class="cell light" selected={selected}>
       <slot></slot>
     </div>
   {:else}
-    <div class="cell dark">
+    <div class="cell dark" selected={selected}>
       <slot></slot>
     </div>
   {/if}
@@ -38,20 +39,19 @@
     font-size: 40%;
     flex-shrink: 0;
     box-sizing: border-box;
+    aspect-ratio: 1;
   }
 
   .light {
     background-color: #eee;
   }
+
   .dark {
     background-color: #333;
   }
 
-  .light:hover {
-    background-color: #ccc;
-  }
-  .dark:hover {
-    background-color: #555;
+  [selected=true] {
+    border: 5px solid red;
   }
 </style>
 

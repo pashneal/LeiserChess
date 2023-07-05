@@ -38,7 +38,6 @@
     fill: blue;
   }
 
-
   svg {
     box-sizing: border-box;
     height: 100%;
@@ -59,8 +58,7 @@
   }
 
   .south-east {
-    transform: rotate(270deg);
-  }
+    transform: rotate(270deg); }
 
   .south-west {
     transform: rotate(0deg);
@@ -73,6 +71,7 @@
   .west {
     transform: rotate(-90deg);
   }
+
   .south {
     transform: rotate(-180deg);
   }
