@@ -6,6 +6,8 @@
 
 
   let board;
+  let selectedSquare = null;
+  
 
   boardState.subscribe(value => {
     board = value.toArray();
@@ -34,6 +36,7 @@
     {/each}
   {/each}
 </div>
+
 
 
 

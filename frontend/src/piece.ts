@@ -176,8 +176,8 @@ export class PieceDescriptor {
     }
     return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
   }
-  rotateCounterClockwise() : PieceDescriptor {
 
+  rotateCounterClockwise() : PieceDescriptor {
     let newDirection : Direction;
     switch(this.direction) {
       case "north":
@@ -265,3 +265,4 @@ export function fen(descriptor : string | null) {
   }
   return null
 }
+
