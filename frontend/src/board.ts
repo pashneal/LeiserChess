@@ -8,16 +8,19 @@ const compare = (a : any, b : any) => {
 };
 
 export const BOARD_SIZE = 8;
-export type Move = [[number, number] , [number, number]]
-export type Rotate = [Direction, Direction]
+export type Move = [[number, number] , [number, number]];
+export type Rotate = [Direction, Direction];
+export type Player = "light" | "dark";
 
 
 export class GameState {
   private board : PieceDescriptor[][];
   private history : Array<String> 
+  private currentPlayer : Player;
 
   private constructor() {
     this.board = [];
+    this.currentPlayer = "light";
     for (let i = 0; i < BOARD_SIZE; i++) {
       this.board[i] = [];
       for (let j = 0; j < BOARD_SIZE; j++) {
@@ -27,10 +30,13 @@ export class GameState {
   }
 
   static fromFEN(fenString : string) {
-     let boardState = new GameState();
-     boardState.board = parseBoard(fenString);
-     boardState.history = [boardState.toFEN()];
-     return boardState;
+     let gameState = new GameState();
+     let [board, player] = parseBoard(fenString);
+     gameState.board = board;
+     gameState.currentPlayer = player;
+     gameState.history = [gameState.toFEN()];
+
+     return gameState;
   }
 
   toFEN() : string {
@@ -58,7 +64,10 @@ export class GameState {
 
       fenString += "/";
     }
-    return fenString.slice(0, -1);
+
+    let currentPlayer = this.currentPlayer == "light" ? "W" : "B";
+    return fenString.slice(0, -1) + " " + currentPlayer;
+
   }
 
   getPiece([x,y] : [number, number]) : PieceDescriptor | null {
@@ -80,6 +89,12 @@ export class GameState {
   // Only allow legal rotations and moves which change the game state
   // Also observe the Ko rule
   movePiece( move : Move ){
+    // Can only rotate or move a piece on your turn
+    if (this.currentPlayer != this.getPiece(move[0]).getPieceColor()) {
+      throw new Error("Cannot move a piece on your opponent's turn");
+    }
+
+    
     console.assert( move[0][0] >= 0 && move[0][0] < BOARD_SIZE && move[0][1] >= 0 && move[0][1] < BOARD_SIZE, "x and y must be between 0 and 7");
 
     if (this.getPiece(move[0]) === null)  {
@@ -108,6 +123,11 @@ export class GameState {
   // Only allow legal rotations and moves which change the game state
   rotatePiece([x,y] : [number,number], newDirection : Direction)  {
     let piece = this.getPiece([x,y]);
+
+    // Can only rotate or move a piece on your turn
+    if (this.currentPlayer != piece?.getPieceColor()) {
+      throw new Error("Cannot move a piece on your opponent's turn");
+    }
 
     console.assert( x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE, "x and y must be between 0 and 7");
 
@@ -139,7 +159,6 @@ export class GameState {
     board.history = this.history.slice();
     return board;
   }
-
 } 
 
 
@@ -274,6 +293,38 @@ class MoveSelector {
     return legalMoves;
   }
 
+  getPossibleRotations() : Direction[] {
+    let currentPos = this.getSelectedSquare();
+    if (currentPos == null) {
+      return [];
+    }
+
+    let piece = this.game.getPiece(currentPos);
+    let possibleRotations = [];
+    if (piece.getPieceType() == "queen") {
+      possibleRotations = ["north", "east", "south", "west"];
+    } else if (piece.getPieceType() == "pawn") {
+      possibleRotations = ["north-east", "north-west", "south-east", "south-west"];
+    }
+
+    // Remove rotations if there is a move queued
+    if (this.moveQueue != null) {
+      return [];
+    }
+
+    // Remove any rotations that are illegal
+    let legalRotations = [];
+    possibleRotations.forEach( (rotation) => {
+      let boardCopy = GameState.fromFEN(this.game.toFEN());
+      try {
+        boardCopy.rotatePiece(currentPos, rotation);
+        legalRotations.push(rotation);
+      } catch (e) {
+        return
+      }
+    });
+  }
+
   getPiece(position : [number, number]) : PieceDescriptor | null {
     return this.game.getPiece(position);
   }
@@ -284,10 +335,15 @@ class MoveSelector {
 
   toQueuedBoard() : GameState {
     let board = this.game.copy();
-    if (this.moveQueue != null) {
-      board.movePiece(this.moveQueue);
-    } else if (this.rotateQueue != null) {
-      board.rotatePiece(this.rotateQueue[0], this.rotateQueue[1]);
+    try {
+      if (this.moveQueue != null) {
+        board.movePiece(this.moveQueue);
+      } else if (this.rotateQueue != null) {
+        board.rotatePiece(this.rotateQueue[0], this.rotateQueue[1]);
+      }
+    } catch (e) {
+      // Do nothing, board is invalid
+      console.log("The queued move is invalid, returning original board");
     }
     return board;
   }
@@ -382,7 +438,7 @@ export class Highlighter {
 }
 
 // Small sanity test
-let openingPosition = "ss7/3nwse3/2nwse4/1nwse3NW1/1se3NWSE1/4NWSE2/3NWSE3/7NN";
+let openingPosition = "ss7/3nwse3/2nwse4/1nwse3NW1/1se3NWSE1/4NWSE2/3NWSE3/7NN W";
 console.assert(
   GameState.fromFEN(openingPosition).toFEN() == openingPosition,
   "FEN string for opening position is incorrect"

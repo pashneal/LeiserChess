@@ -33,15 +33,35 @@ export function parseNumber(input) {
   return [1, input];
 }
 
+export function parseWhitespace(input) {
+  let match = input.match(/^\s+/);
+  if (match) {
+    return [match[0], input.slice(match[0].length)];
+  }
+  return [null, input];
+}
+
+
+export function parseCurrentPlayer(input) {
+  let match = input.match(/^[wb]/i);
+  if (match) {
+    return [match[0], input.slice(match[0].length)];
+  }
+  return [null, input];
+}
+
+
 export function parseBoard(input) {
   let board = Array(8).fill(null).map(() => Array(8).fill(null));
   let row = 0;
   let col = 0;
+  let currentPlayer;
   while (input) {
     let [newPiece, pieceMatched] = parsePiece(input);
     let [numberCaptured, numberMatched] = parseNumber(input);
     let [rowCaptured, newRowMatched] = parseRow(input);
-
+    let [whitespaceCaptured, whitespaceMatched] = parseWhitespace(input);
+    let [currentPlayerCaptured, currentPlayerMatched] = parseCurrentPlayer(input);
     if  (newPiece) {
       board[row][col] = newPiece;
       input = pieceMatched;
@@ -53,10 +73,17 @@ export function parseBoard(input) {
       input = newRowMatched;
       row += 1;
       col = 0;
+    } else if (whitespaceCaptured) {
+      input = whitespaceMatched;
+    } else if (currentPlayerCaptured) {
+      currentPlayer = currentPlayerCaptured;
+      input = currentPlayerMatched;
     } else {
-      input = "";
+      throw new Error("Could not parse after this input: " + input);
     }
   }
-  return board;
+  currentPlayer = currentPlayer?.toLowerCase();
+  currentPlayer = currentPlayer == "w" ? "light" : "dark";
+  return [board, currentPlayer];
 }
 
