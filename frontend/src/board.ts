@@ -12,7 +12,7 @@ export type Move = [[number, number] , [number, number]]
 export type Rotate = [Direction, Direction]
 
 
-export class BoardState {
+export class GameState {
   private board : PieceDescriptor[][];
   private history : Array<String> 
 
@@ -27,7 +27,7 @@ export class BoardState {
   }
 
   static fromFEN(fenString : string) {
-     let boardState = new BoardState();
+     let boardState = new GameState();
      boardState.board = parseBoard(fenString);
      boardState.history = [boardState.toFEN()];
      return boardState;
@@ -72,7 +72,7 @@ export class BoardState {
 
   // Returns a copy of the board state's internals
   toArray() : PieceDescriptor[][] {
-    let boardState = BoardState.fromFEN(this.toFEN());
+    let boardState = GameState.fromFEN(this.toFEN());
     return boardState.board;
   }
 
@@ -118,13 +118,13 @@ export class BoardState {
       throw new Error("There must be a piece at the location to rotate");
     }
 
-
-    if (piece.getPieceType() == "queen"){
-      console.assert( newDirection  in ["north", "south", "east", "west"], "Queen can only rotate to cardinal directions");
+    
+    if (piece.getPieceType() == "queen" && !Array("north", "east", "south", "west").includes(newDirection)){
+      throw new Error("Queen can only rotate to cardinal directions");
     }
 
-    if (piece.getPieceType() == "queen"){
-      console.assert( newDirection  in ["north-east", "north-west", "south-east", "south-west"], "Pawn can only rotate to diagonal directions");
+    if (piece.getPieceType() == "pawn" && !Array("north-east", "north-west", "south-east", "south-west").includes(newDirection)) {
+        throw new Error("Pawn can only rotate to diagonal directions");
     }
 
     let newPiece = new PieceDescriptor(piece.getPieceType(), piece.getPieceColor(), newDirection);
@@ -134,8 +134,8 @@ export class BoardState {
     this.history.push(this.toFEN());
   }
 
-  copy() : BoardState {
-    let board = BoardState.fromFEN(this.toFEN());
+  copy() : GameState {
+    let board = GameState.fromFEN(this.toFEN());
     board.history = this.history.slice();
     return board;
   }
@@ -144,14 +144,14 @@ export class BoardState {
 
 
 class MoveSelector {
-  private board : BoardState;
+  private game : GameState;
   private selectedSquare : [number, number] | null = null;
   private moveQueue : [[number, number], [number, number]] | null = null;
   private rotateQueue : [[number, number], Direction] | null = null;
 
 
-  constructor( newBoard : BoardState ) {
-    this.board = newBoard.copy(); 
+  constructor( newBoard : GameState ) {
+    this.game = newBoard.copy(); 
   }
 
   queueMove( newPosition : [number, number]) {
@@ -176,7 +176,7 @@ class MoveSelector {
       let rotation = this.rotateQueue[1];
       newDirection = rotateClockwise(rotation);
     } else {
-      newDirection = rotateClockwise(this.board.getPiece(position).getDirection());
+      newDirection = rotateClockwise(this.game.getPiece(position).getDirection());
     }
     
     this.queueRotation(newDirection);
@@ -189,7 +189,7 @@ class MoveSelector {
     }
 
     let position = this.selectedSquare;
-    let piece  = this.board.getPiece(position);
+    let piece  = this.game.getPiece(position);
 
     if (newDirection == piece.getDirection()) {
       this.rotateQueue = null;
@@ -205,9 +205,9 @@ class MoveSelector {
 
   commitQueue() {
     if (this.moveQueue != null) {
-      this.board.movePiece(this.moveQueue);
+      this.game.movePiece(this.moveQueue);
     } else if (this.rotateQueue != null) {
-      this.board.rotatePiece(this.rotateQueue[0], this.rotateQueue[1]);
+      this.game.rotatePiece(this.rotateQueue[0], this.rotateQueue[1]);
     } else {
       throw new Error("Cannot commit queue when there is nothing in the queue");
     }
@@ -262,7 +262,7 @@ class MoveSelector {
     // Remove any moves that are illegal 
     let legalMoves = [];
     potentialMoves.forEach( (move) => {
-      let boardCopy = BoardState.fromFEN(this.board.toFEN());
+      let boardCopy = GameState.fromFEN(this.game.toFEN());
       try {
         boardCopy.movePiece(move);
         legalMoves.push(move);
@@ -275,15 +275,15 @@ class MoveSelector {
   }
 
   getPiece(position : [number, number]) : PieceDescriptor | null {
-    return this.board.getPiece(position);
+    return this.game.getPiece(position);
   }
 
-  toBoard() : BoardState {
-    return this.board;
+  toBoard() : GameState {
+    return this.game;
   }
 
-  toQueuedBoard() : BoardState {
-    let board = this.board.copy();
+  toQueuedBoard() : GameState {
+    let board = this.game.copy();
     if (this.moveQueue != null) {
       board.movePiece(this.moveQueue);
     } else if (this.rotateQueue != null) {
@@ -291,7 +291,6 @@ class MoveSelector {
     }
     return board;
   }
-
 }
 
 export type Highlight = "none" | "main" | "secondary";
@@ -301,7 +300,7 @@ export class Highlighter {
   private moveSelector : MoveSelector;
   public highlightSquares : Highlight[][];
 
-  constructor(board : BoardState) {
+  constructor(board : GameState) {
     this.moveSelector = new MoveSelector(board);
     this.highlightSquares = [];
 
@@ -348,13 +347,13 @@ export class Highlighter {
     this.moveSelector.deselectSquare();
   }
 
-  commit() : BoardState {
+  commit() : GameState {
     this.moveSelector.commitQueue();
     this.updateHighlightedSquares();
     return this.getBoard();
   }
 
-  getBoard() : BoardState {
+  getBoard() : GameState {
     return this.moveSelector.toQueuedBoard();
   }
 
@@ -385,7 +384,7 @@ export class Highlighter {
 // Small sanity test
 let openingPosition = "ss7/3nwse3/2nwse4/1nwse3NW1/1se3NWSE1/4NWSE2/3NWSE3/7NN";
 console.assert(
-  BoardState.fromFEN(openingPosition).toFEN() == openingPosition,
+  GameState.fromFEN(openingPosition).toFEN() == openingPosition,
   "FEN string for opening position is incorrect"
 );
 
