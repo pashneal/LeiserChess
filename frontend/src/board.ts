@@ -21,7 +21,7 @@ export type Player = "light" | "dark";
 //  3. Moves and Rotations must be legal (i.e. no moving a piece that doesn't exist)
 //  4. The Ko rule is observed
 //  5. The board is always in a state resulting from the composition of 
-//     legal moves and rotations after an initial FEN
+//     legal moves and rotations after an initial input FEN
 //
 export class GameState {
   private board : PieceDescriptor[][];
