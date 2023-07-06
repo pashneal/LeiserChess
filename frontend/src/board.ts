@@ -172,7 +172,23 @@ export class GameState {
 } 
 
 
-class MoveSelector {
+// MoveSelector is a class designed to help with state management of 
+// an interactive game of LeiserChess. It uses a 3-stage commit process
+// to first, select a square containing a piece, queue a move or rotation for that piece
+// and then finally commit the move or rotation.
+//
+//  Select -> Queue -> Commit
+//
+// It has the following guarantees:
+//  0. An initial target square must be selected before a move or rotation can be queued
+//  1. A move or rotation can not be committed if illegal 
+//  2. A move or rotation can be queued without committing it
+//  3. A move or rotation can be removed without committing it
+//  4. A legal move or rotation can queued and observed using .toQueuedBoard() without committing it 
+//  5. All committed move or rotation can be observed using .toBoard() 
+//  6. Only one move or rotation can be queued at a time
+//
+class MoveSelector { 
   private game : GameState;
   private selectedSquare : [number, number] | null = null;
   private moveQueue : [[number, number], [number, number]] | null = null;
@@ -362,6 +378,11 @@ class MoveSelector {
 export type Highlight = "none" | "main" | "secondary";
 
 // Helps the UI figure out where to highlight using some move selector
+//
+// This represents a state machine in which some square is clicked on the UI,
+// and behavior representing possible changes to the board are observable via
+// .getBoard() and highlightSquares
+//
 export class Highlighter {
   private moveSelector : MoveSelector;
   public highlightSquares : Highlight[][];
@@ -379,7 +400,7 @@ export class Highlighter {
 
   }
 
-  toggleSquare( position : [number , number]) {
+  interactWithSquare( position : [number , number]) {
     let selectedSquare = this.moveSelector.getSelectedSquare();
     
     if (this.moveSelector.getSelectedSquare() == null) {
@@ -387,15 +408,20 @@ export class Highlighter {
       console.log("Select");
       this.moveSelector.selectSquare(position);
     } else if (compare(position, selectedSquare)) {
-      // Square is already selected, but same square selected again
+      // Square is already selected, 
+      // but same square selected again
       console.log("Rotate");
       this.rotateCW();
     } else if ( this.moveSelector.getPotentialMoves().some( (move) => compare(move[1], position))) {
-      // Square is already selected, and not same square selected, but an legal move square is selected
+      // Square is already selected, 
+      // and not same square selected, 
+      // but an legal move square is selected
       console.log("Move");
       this.moveSelector.queueMove(position);
     } else {
-      // Square is already selected, but a non-legal move square selected
+      // Square is already selected, 
+      // and not same square selected, 
+      // but a non-legal move square selected
       console.log("Undo");
       this.undo();
     }
