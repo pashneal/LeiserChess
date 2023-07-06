@@ -13,6 +13,16 @@ export type Rotate = [Direction, Direction];
 export type Player = "light" | "dark";
 
 
+// GameState is a class that represents the state of the LeiserChess game
+// and it has the following guarantees:
+//
+//  1. It can always be converted to a FEN string 
+//  2. Moves and rotations are only allowed if they change the game state
+//  3. Moves and Rotations must be legal (i.e. no moving a piece that doesn't exist)
+//  4. The Ko rule is observed
+//  5. The board is always in a state resulting from the composition of 
+//     legal moves and rotations after an initial FEN
+//
 export class GameState {
   private board : PieceDescriptor[][];
   private history : Array<String> 
