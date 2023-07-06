@@ -1,7 +1,11 @@
 import { PieceDescriptor } from "./piece";
-import type { Direction } from "./piece";
+import type { Direction} from "./piece";
+import { rotateClockwise} from "./piece";
 import { parseBoard } from "./parser";
 
+const compare = (a : any, b : any) => {
+  return JSON.stringify(a) === JSON.stringify(b);
+};
 
 export const BOARD_SIZE = 8;
 export type Move = [[number, number] , [number, number]]
@@ -158,15 +162,26 @@ class MoveSelector {
     this.moveQueue = [this.selectedSquare, newPosition];
     this.rotateQueue = null;
   }
+
   queueRotateCW() {
     if (this.selectedSquare == null) {
       throw new Error("Cannot queue move when no square is selected");
     }
 
-    let position = this.selectedSquare ;
-    let rotatedPiece = this.board.getPiece(position).rotateClockwise();
-    this.rotateQueue = [position, rotatedPiece.getDirection()];
+    let position = this.selectedSquare;
+    let newDirection : Direction;
+
+    // If rotated once before, rotate again
+    if (this.rotateQueue != null) {
+      let rotation = this.rotateQueue[1];
+      newDirection = rotateClockwise(rotation);
+    } else {
+      newDirection = rotateClockwise(this.board.getPiece(position).getDirection());
+    }
+    
+    this.queueRotation(newDirection);
   }
+
   queueRotation( newDirection : Direction) {
     this.moveQueue = null;
     if (this.selectedSquare == null) {
@@ -174,8 +189,9 @@ class MoveSelector {
     }
 
     let position = this.selectedSquare;
+    let piece  = this.board.getPiece(position);
 
-    if (newDirection == this.board.getPiece(position).getDirection()) {
+    if (newDirection == piece.getDirection()) {
       this.rotateQueue = null;
     } else {
       this.rotateQueue = [position, newDirection];
@@ -266,6 +282,16 @@ class MoveSelector {
     return this.board;
   }
 
+  toQueuedBoard() : BoardState {
+    let board = this.board.copy();
+    if (this.moveQueue != null) {
+      board.movePiece(this.moveQueue);
+    } else if (this.rotateQueue != null) {
+      board.rotatePiece(this.rotateQueue[0], this.rotateQueue[1]);
+    }
+    return board;
+  }
+
 }
 
 export type Highlight = "none" | "main" | "secondary";
@@ -289,17 +315,23 @@ export class Highlighter {
   }
 
   toggleSquare( position : [number , number]) {
+    let selectedSquare = this.moveSelector.getSelectedSquare();
+    
     if (this.moveSelector.getSelectedSquare() == null) {
       // No square selected yet
+      console.log("Select");
       this.moveSelector.selectSquare(position);
-    } else if (this.moveSelector.getSelectedSquare() == position) {
+    } else if (compare(position, selectedSquare)) {
       // Square is already selected, but same square selected again
+      console.log("Rotate");
       this.rotateCW();
-    } else if ( this.moveSelector.getPotentialMoves().some( (move) => move[1] == position)) {
+    } else if ( this.moveSelector.getPotentialMoves().some( (move) => compare(move[1], position))) {
       // Square is already selected, and not same square selected, but an legal move square is selected
+      console.log("Move");
       this.moveSelector.queueMove(position);
     } else {
       // Square is already selected, but a non-legal move square selected
+      console.log("Undo");
       this.undo();
     }
     this.updateHighlightedSquares();
@@ -319,11 +351,11 @@ export class Highlighter {
   commit() : BoardState {
     this.moveSelector.commitQueue();
     this.updateHighlightedSquares();
-    return this.getTransformedBoard();
+    return this.getBoard();
   }
 
-  getTransformedBoard() : BoardState {
-    return this.moveSelector.toBoard();
+  getBoard() : BoardState {
+    return this.moveSelector.toQueuedBoard();
   }
 
   private updateHighlightedSquares() {
@@ -346,7 +378,7 @@ export class Highlighter {
   }
 
   at( [x,y] : [number  , number] ) {
-    return this.highlightSquares[x][y] 
+    return this.highlightSquares[x][y];
   }
 }
 

@@ -31,6 +31,14 @@ export class PieceDescriptor {
     return this.pieceColor;
   }
 
+  rotateClockwise() : PieceDescriptor {
+    let newDirection  = rotateClockwise(this.direction);
+    return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
+  }
+  rotateCounterClockwise() : PieceDescriptor {
+    let newDirection  = rotateCounterClockwise(this.direction);
+    return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
+  }
 
   static fromString(pieceString : string) : PieceDescriptor {
     return fen(pieceString);
@@ -142,70 +150,6 @@ export class PieceDescriptor {
     return new PieceDescriptor(this.pieceType, this.pieceColor, "west");
   }
 
-  rotateClockwise() : PieceDescriptor {
-    let newDirection : Direction;
-    switch(this.direction) {
-      case "north":
-        newDirection = "east";
-        break;
-      case "east":
-        newDirection = "south";
-        break;
-      case "south":
-        newDirection = "west";
-        break;
-      case "west":
-        newDirection = "north";
-        break;
-      case "north-east":
-        newDirection = "south-east";
-        break;
-      case "south-east":
-        newDirection = "south-west";
-        break;
-      case "south-west":
-        newDirection = "north-west";
-        break;
-      case "north-west":
-        newDirection = "north-east";
-        break;
-      default:
-        throw new Error("Cannot rotate on Invalid Direction");
-    }
-    return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
-  }
-
-  rotateCounterClockwise() : PieceDescriptor {
-    let newDirection : Direction;
-    switch(this.direction) {
-      case "north":
-        newDirection = "west";
-        break;
-      case "east":
-        newDirection = "north";
-        break;
-      case "south":
-        newDirection = "east";
-        break;
-      case "west":
-        newDirection = "south";
-        break;
-      case "north-east":
-        newDirection = "north-west";
-        break;
-      case "south-east":
-        newDirection = "north-east";
-        break;
-      case "south-west":
-        newDirection = "south-east";
-        break;
-      case "north-west":
-        newDirection = "south-west";
-        break;
-    }
-
-    return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
-  }
 
 }
 
@@ -264,3 +208,67 @@ export function fen(descriptor : string | null) {
   return null
 }
 
+export function rotateClockwise(direction : Direction) : Direction{
+  let newDirection : Direction;
+  switch(direction) {
+    case "north":
+      newDirection = "east";
+      break;
+    case "east":
+      newDirection = "south";
+      break;
+    case "south":
+      newDirection = "west";
+      break;
+    case "west":
+      newDirection = "north";
+      break;
+    case "north-east":
+      newDirection = "south-east";
+      break;
+    case "south-east":
+      newDirection = "south-west";
+      break;
+    case "south-west":
+      newDirection = "north-west";
+      break;
+    case "north-west":
+      newDirection = "north-east";
+      break;
+    default:
+      throw new Error("Cannot rotate on Invalid Direction");
+  }
+  return newDirection;
+}
+
+export function rotateCounterClockwise(direction : Direction) : Direction {
+  let newDirection : Direction;
+  switch(direction) {
+    case "north":
+      newDirection = "west";
+      break;
+    case "east":
+      newDirection = "north";
+      break;
+    case "south":
+      newDirection = "east";
+      break;
+    case "west":
+      newDirection = "south";
+      break;
+    case "north-east":
+      newDirection = "north-west";
+      break;
+    case "south-east":
+      newDirection = "north-east";
+      break;
+    case "south-west":
+      newDirection = "south-east";
+      break;
+    case "north-west":
+      newDirection = "south-west";
+      break;
+  }
+
+  return newDirection;
+}
