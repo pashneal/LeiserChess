@@ -55,7 +55,12 @@
   }
 
 
-  [highlight='1'] {
+  [highlight='main'] {
+    border: 3px solid skyblue;
+  }
+
+  [highlight='secondary'] {
+    border: 3px solid red;
   }
 </style>
 
