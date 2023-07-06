@@ -81,8 +81,6 @@ export class PieceDescriptor {
       composedString = composedString.toLowerCase();
     }
 
-    console.log(composedString, this.pieceType, this.pieceColor, this.direction);
-
     return composedString;
 
   }

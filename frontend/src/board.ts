@@ -220,7 +220,9 @@ class MoveSelector {
 
   getPotentialMoves() : Move[] {
     let currentPos = this.getSelectedSquare();
-    console.assert(currentPos !== null, "Square is not selected yet");
+    if (currentPos == null) {
+      return [];
+    }
 
     let potentialMoves = [];
     for (let dx = -1 ; dx <= 1; dx++) {
@@ -266,16 +268,12 @@ class MoveSelector {
 
 }
 
-enum Highlight {
-  MAIN,
-  SECONDARY,
-  NONE
-}
+export type Highlight = "none" | "main" | "secondary";
 
 // Helps the UI figure out where to highlight using some move selector
-class Highlighter {
+export class Highlighter {
   private moveSelector : MoveSelector;
-  private highlightSquares : Highlight[][];
+  public highlightSquares : Highlight[][];
 
   constructor(board : BoardState) {
     this.moveSelector = new MoveSelector(board);
@@ -284,14 +282,13 @@ class Highlighter {
     for (let i = 0; i < BOARD_SIZE; i++) {
       this.highlightSquares[i] = [];
       for (let j = 0; j < BOARD_SIZE; j++) {
-        this.highlightSquares[i][j] = Highlight.NONE;
+        this.highlightSquares[i][j] = "none";
       }
     }
 
   }
 
-
-  selectSquare( position : [number , number]) {
+  toggleSquare( position : [number , number]) {
     if (this.moveSelector.getSelectedSquare() == null) {
       // No square selected yet
       this.moveSelector.selectSquare(position);
@@ -299,10 +296,10 @@ class Highlighter {
       // Square is already selected, but same square selected again
       this.rotateCW();
     } else if ( this.moveSelector.getPotentialMoves().some( (move) => move[1] == position)) {
-      // Square is already selected, but an legal move square is selected
+      // Square is already selected, and not same square selected, but an legal move square is selected
       this.moveSelector.queueMove(position);
     } else {
-      // Square is already selected, but a non-adjacent square selected
+      // Square is already selected, but a non-legal move square selected
       this.undo();
     }
     this.updateHighlightedSquares();
@@ -325,31 +322,32 @@ class Highlighter {
     return this.getTransformedBoard();
   }
 
-
   getTransformedBoard() : BoardState {
     return this.moveSelector.toBoard();
   }
 
   private updateHighlightedSquares() {
+
     // Set everything to null
     for (let i = 0; i < BOARD_SIZE; i++) {
       for (let j = 0; j < BOARD_SIZE; j++) {
-        this.highlightSquares[i][j] = Highlight.NONE;
+        this.highlightSquares[i][j] = "none";
       }
     }
 
-    this.moveSelector.getPotentialMoves().forEach( (move) => {
-      this.highlightSquares[move[1][0]][move[1][1]] = Highlight.MAIN;
+    this.moveSelector.getPotentialMoves().forEach( ([_, [x,y]]) => {
+      this.highlightSquares[x][y] = "main";
     });
 
-    let [x,y] = this.moveSelector.getSelectedSquare();
     if (this.moveSelector.getSelectedSquare() != null) {
-      this.highlightSquares[x][y] = Highlight.SECONDARY;
+      let [x,y] = this.moveSelector.getSelectedSquare();
+      this.highlightSquares[x][y] = "secondary";
     }
-
   }
 
-  
+  at( [x,y] : [number  , number] ) {
+    return this.highlightSquares[x][y] 
+  }
 }
 
 // Small sanity test

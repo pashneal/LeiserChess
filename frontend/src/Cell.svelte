@@ -1,15 +1,15 @@
 <!-- Create a square -->
 <script>
+  import Piece from "./Piece.svelte";
+
   export let row = 0;
   export let col = 0;
-  export let selected = false;
-  import Piece from "./Piece.svelte";
+  export let highlight = "none";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
   function clicked() {
-    console.log(row,col);
     dispatch("clicked", {
       row,
       col
@@ -18,13 +18,17 @@
 </script>
 
 
-<div on:click={clicked} on:keydown={clicked}>
+<div 
+  on:click={clicked} 
+  on:keydown={clicked} 
+  highlight={(highlight || "").toString()} 
+>
   {#if row % 2 === col % 2}
-    <div class="cell light" selected={selected}>
+    <div class="cell light">
       <slot></slot>
     </div>
   {:else}
-    <div class="cell dark" selected={selected}>
+    <div class="cell dark">
       <slot></slot>
     </div>
   {/if}
@@ -50,8 +54,8 @@
     background-color: #333;
   }
 
-  [selected=true] {
-    border: 5px solid red;
+
+  [highlight='1'] {
   }
 </style>
 
