@@ -174,7 +174,7 @@ export class GameState {
 
 // MoveSelector is a class designed to help with state management of 
 // an interactive game of LeiserChess. It uses a 3-stage commit process
-// to first, select a square containing a piece, queue a move or rotation for that piece
+// to first, select a square containing a piece, next, queue a move or rotation for that piece
 // and then finally commit the move or rotation.
 //
 //  Select -> Queue -> Commit
@@ -188,6 +188,8 @@ export class GameState {
 //  5. All committed move or rotation can be observed using .toBoard() 
 //  6. Only one move or rotation can be queued at a time
 //
+//  Once committed, the queue is cleared and the square deselected
+//
 class MoveSelector { 
   private game : GameState;
   private selectedSquare : [number, number] | null = null;
@@ -195,8 +197,8 @@ class MoveSelector {
   private rotateQueue : [[number, number], Direction] | null = null;
 
 
-  constructor( newBoard : GameState ) {
-    this.game = newBoard.copy(); 
+  constructor( newGame : GameState ) {
+    this.game = newGame.copy(); 
   }
 
   queueMove( newPosition : [number, number]) {
@@ -258,6 +260,7 @@ class MoveSelector {
     }
 
     this.dequeue();
+    this.deselectSquare();
   }
 
   selectSquare(position : [number, number]) {
@@ -379,9 +382,17 @@ export type Highlight = "none" | "main" | "secondary";
 
 // Helps the UI figure out where to highlight using some move selector
 //
-// This represents a state machine in which some square is clicked on the UI,
-// and behavior representing possible changes to the board are observable via
-// .getBoard() and highlightSquares
+// This class acts as a state machine that reacts to clicks on the UI, 
+// providing observable changes to the board.
+//
+// These can be observed via the highlightSquares property, which is a 2D array
+// of Highlight values, where each value corresponds to a square on the board.
+//
+// The highlightSquares property is updated whenever the user interacts with the
+// board, and can be used to update the UI. 
+//
+// Furthermore this class provides a way to make moves without commiting them to the main
+// game state and observe the changes via getBoard() property
 //
 export class Highlighter {
   private moveSelector : MoveSelector;
@@ -422,8 +433,8 @@ export class Highlighter {
       // Square is already selected, 
       // and not same square selected, 
       // but a non-legal move square selected
-      console.log("Undo");
-      this.undo();
+      console.log("Unselect");
+      this.unselect();
     }
     this.updateHighlightedSquares();
   }
@@ -432,7 +443,7 @@ export class Highlighter {
     this.moveSelector.queueRotateCW();
   }
 
-  private undo() {
+  private unselect() {
     if (this.moveSelector.getSelectedSquare() == null) {
       return;
     }
@@ -450,8 +461,6 @@ export class Highlighter {
   }
 
   private updateHighlightedSquares() {
-
-    // Set everything to null
     for (let i = 0; i < BOARD_SIZE; i++) {
       for (let j = 0; j < BOARD_SIZE; j++) {
         this.highlightSquares[i][j] = "none";
