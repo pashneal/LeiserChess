@@ -1,22 +1,21 @@
-export type QueenDirection = "north" | "south" | "east" | "west";
-export type PawnDirection = "north-east" | "north-west" | "south-east" | "south-west";
-export type Direction = QueenDirection | PawnDirection;
 export type PieceType = "queen" | "pawn";
 export type PieceColor = "light" | "dark";
+import type { Position , Direction } from './spatialUtils';
+import {PawnDirection, QueenDirection} from './spatialUtils';
 
 
 export class PieceDescriptor {
   private pieceType : PieceType;
-  private direction : PawnDirection | QueenDirection;
+  private direction : Direction;
   private pieceColor : PieceColor;
 
-  constructor(pieceType : PieceType, color : PieceColor, direction : PawnDirection | QueenDirection | null ) {
+  constructor(pieceType : PieceType, color : PieceColor, direction : Direction | null ) {
     this.pieceType = pieceType;
     this.direction = direction;
     this.pieceColor = color;
   }
 
-  getDirection() : PawnDirection | QueenDirection {
+  getDirection() : Direction {
     if (this.direction == null) {
       throw new Error("Cannot get direction of a piece that doesn't have a direction");
     }
@@ -32,11 +31,17 @@ export class PieceDescriptor {
   }
 
   rotateClockwise() : PieceDescriptor {
-    let newDirection  = rotateClockwise(this.direction);
+    let newDirection  = this.direction.rotatedClockwise();
     return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
   }
+
   rotateCounterClockwise() : PieceDescriptor {
-    let newDirection  = rotateCounterClockwise(this.direction);
+    let newDirection  = this.direction.rotatedCounterClockwise();
+    return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
+  }
+
+  rotated180() : PieceDescriptor {
+    let newDirection  = this.direction.rotated180();
     return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
   }
 
@@ -49,7 +54,7 @@ export class PieceDescriptor {
     let direction : string;
     let composedString : string  = "";
 
-    switch(this.direction) {
+    switch(this.direction.toString()) {
       case "north":
         direction = "N";
         break;
@@ -90,7 +95,6 @@ export class PieceDescriptor {
     }
 
     return composedString;
-
   }
 
 
@@ -112,46 +116,76 @@ export class PieceDescriptor {
 
   nw() : PieceDescriptor {
     //assert(this.pieceType == "pawn");
-    return new PieceDescriptor(this.pieceType, this.pieceColor, "north-west");
+    return new PieceDescriptor(
+      this.pieceType, 
+      this.pieceColor, 
+      new PawnDirection("north-west")
+    );
   }
 
   sw() : PieceDescriptor {
     //assert(this.pieceType == "pawn");
-    return new PieceDescriptor(this.pieceType, this.pieceColor, "south-west");
+    return new PieceDescriptor(
+      this.pieceType, 
+      this.pieceColor, 
+      new PawnDirection("south-west")
+    );
   }
 
   ne() : PieceDescriptor {
     //assert(this.pieceType == "pawn");
-    return new PieceDescriptor(this.pieceType, this.pieceColor, "north-east");
+    return new PieceDescriptor(
+      this.pieceType, 
+      this.pieceColor, 
+      new PawnDirection("north-east")
+    );
   }
 
   se() : PieceDescriptor {
-    //assert(this.pieceType == "pawn");
-    return new PieceDescriptor(this.pieceType, this.pieceColor, "south-east");
+    return new PieceDescriptor(
+      this.pieceType,
+      this.pieceColor,
+      new PawnDirection("south-east")
+    );
   }
 
   north() : PieceDescriptor {
     //assert(this.pieceType == "queen");
-    return new PieceDescriptor(this.pieceType, this.pieceColor, "north");
+    return new PieceDescriptor(
+      this.pieceType,
+      this.pieceColor,
+      new QueenDirection("north")
+    );
   }
 
   south() : PieceDescriptor {
     //assert(this.pieceType == "queen");
-    return new PieceDescriptor(this.pieceType, this.pieceColor, "south");
+    return new PieceDescriptor(
+      this.pieceType, 
+      this.pieceColor, 
+      new QueenDirection("south")
+    );
   }
 
   east() : PieceDescriptor {
     //assert(this.pieceType == "queen");
-    return new PieceDescriptor(this.pieceType, this.pieceColor, "east");
+    return new PieceDescriptor(
+      this.pieceType,
+      this.pieceColor,
+      new QueenDirection("east")
+    );
   }
 
   west() : PieceDescriptor {
     //assert(this.pieceType == "queen");
-    return new PieceDescriptor(this.pieceType, this.pieceColor, "west");
+    return new PieceDescriptor(
+      this.pieceType,
+      this.pieceColor,
+      new QueenDirection("west")
+    );
   }
-
-
 }
+
 
 export function fen(descriptor : string | null) {
   if (descriptor == null) {
@@ -208,67 +242,4 @@ export function fen(descriptor : string | null) {
   return null
 }
 
-export function rotateClockwise(direction : Direction) : Direction{
-  let newDirection : Direction;
-  switch(direction) {
-    case "north":
-      newDirection = "east";
-      break;
-    case "east":
-      newDirection = "south";
-      break;
-    case "south":
-      newDirection = "west";
-      break;
-    case "west":
-      newDirection = "north";
-      break;
-    case "north-east":
-      newDirection = "south-east";
-      break;
-    case "south-east":
-      newDirection = "south-west";
-      break;
-    case "south-west":
-      newDirection = "north-west";
-      break;
-    case "north-west":
-      newDirection = "north-east";
-      break;
-    default:
-      throw new Error("Cannot rotate on Invalid Direction");
-  }
-  return newDirection;
-}
 
-export function rotateCounterClockwise(direction : Direction) : Direction {
-  let newDirection : Direction;
-  switch(direction) {
-    case "north":
-      newDirection = "west";
-      break;
-    case "east":
-      newDirection = "north";
-      break;
-    case "south":
-      newDirection = "east";
-      break;
-    case "west":
-      newDirection = "south";
-      break;
-    case "north-east":
-      newDirection = "north-west";
-      break;
-    case "south-east":
-      newDirection = "north-east";
-      break;
-    case "south-west":
-      newDirection = "south-east";
-      break;
-    case "north-west":
-      newDirection = "south-west";
-      break;
-  }
-
-  return newDirection;
-}

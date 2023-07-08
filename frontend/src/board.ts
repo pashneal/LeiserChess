@@ -1,15 +1,10 @@
-import { PieceDescriptor } from "./piece";
-import type { Direction} from "./piece";
-import { rotateClockwise} from "./piece";
+import type { PieceDescriptor } from "./piece";
 import { parseBoard } from "./parser";
+import { BOARD_SIZE } from './constants';
+import type { Direction,  Position } from "./spatialUtils";
+import type { Action } from "./action";
+import { Rotation} from "./action";
 
-const compare = (a : any, b : any) => {
-  return JSON.stringify(a) === JSON.stringify(b);
-};
-
-export const BOARD_SIZE = 8;
-export type Move = [[number, number] , [number, number]];
-export type Rotate = [Direction, Direction];
 export type Player = "light" | "dark";
 
 
@@ -17,10 +12,10 @@ export type Player = "light" | "dark";
 // and it has the following guarantees:
 //
 //  1. It can always be converted to a FEN string 
-//  2. Moves and rotations are only allowed if they change the game state
-//  3. Moves and Rotations must be legal (i.e. no moving a piece that doesn't exist)
-//  4. The Ko rule is observed
-//  5. The board is always in a state resulting from the composition of 
+//  2. Actions are only allowed if they change the 
+//     game state to something not in the previous 2 moves
+//  3. Actions must be legal (i.e. no moving a piece that doesn't exist)
+//  4. The board is always in a state resulting from the composition of 
 //     legal moves and rotations after an initial input FEN
 //
 export class GameState {
@@ -80,14 +75,14 @@ export class GameState {
 
   }
 
-  getPiece([x,y] : [number, number]) : PieceDescriptor | null {
-    return this.board[x][y];
+  getPiece(position : Position) : PieceDescriptor | null {
+    let [x, y] = [position.getX(), position.getY()];
+    return this.board[y][x];
   }
 
   private setPiece([x,y] : [number, number], piece : PieceDescriptor | null) {
-    this.board[x][y] = piece;
+    this.board[y][x] = piece;
   }
-
 
   // Returns a copy of the board state's internals
   toArray() : PieceDescriptor[][] {
@@ -96,72 +91,28 @@ export class GameState {
   }
 
 
-  // Only allow legal rotations and moves which change the game state
-  // Also observe the Ko rule
-  movePiece( move : Move ){
-    // Can only rotate or move a piece on your turn
-    if (this.currentPlayer != this.getPiece(move[0]).getPieceColor()) {
-      throw new Error("Cannot move a piece on your opponent's turn");
+
+  // Apply an action on the board
+  //
+  // Justification: as we expect that the type of action will change 
+  // from a version of the game to another, we want to keep the
+  // implementation of the actions (moves, rotation, swaps etc) 
+  // logic outside of the GameState class
+  //
+  // @param action the action to apply
+  applyAction(action : Action) {
+
+    // Transform the board according to the action
+    let board = action.appliedTo(this.toArray());
+    this.board = board;
+
+    // None of the previous 2 states can be the same as the current state
+    if (this.history.slice(-2).some((state) => state == this.toFEN())) {
+      throw new Error("None of the previous 2 states can be the same as the current state");
     }
 
-    
-    console.assert( move[0][0] >= 0 && move[0][0] < BOARD_SIZE && move[0][1] >= 0 && move[0][1] < BOARD_SIZE, "x and y must be between 0 and 7");
-
-    if (this.getPiece(move[0]) === null)  {
-      throw new Error("There must be a piece at the location to move");
-    }
-    const thisPiece = this.getPiece(move[0]);
-    const thatPiece = this.getPiece(move[1]);
-    this.setPiece(move[0], thatPiece);
-    this.setPiece(move[1], thisPiece);
-    // Check that FEN is not in past 2 moves
-    this.history.slice(-2).forEach( (fen) => {
-      if (fen == this.toFEN()) {
-        // Revert move
-        this.setPiece(move[0], thisPiece);
-        this.setPiece(move[1], thatPiece);
-
-        throw new Error("Cannot repeat a board state within the past 2 moves");
-      }
-    });
-
-
-    // Game state is valid, commit to history
     this.history.push(this.toFEN());
-  }
-
-  // Only allow legal rotations and moves which change the game state
-  rotatePiece([x,y] : [number,number], newDirection : Direction)  {
-    let piece = this.getPiece([x,y]);
-
-    // Can only rotate or move a piece on your turn
-    if (this.currentPlayer != piece?.getPieceColor()) {
-      throw new Error("Cannot move a piece on your opponent's turn");
-    }
-
-    console.assert( x >= 0 && x < BOARD_SIZE && y >= 0 && y < BOARD_SIZE, "x and y must be between 0 and 7");
-
-    if( newDirection == piece.getDirection())  {
-      throw new Error("Rotation must change the orientation of the piece");
-    }
-    if (this.getPiece([x,y]) === null)  {
-      throw new Error("There must be a piece at the location to rotate");
-    }
-
-    
-    if (piece.getPieceType() == "queen" && !Array("north", "east", "south", "west").includes(newDirection)){
-      throw new Error("Queen can only rotate to cardinal directions");
-    }
-
-    if (piece.getPieceType() == "pawn" && !Array("north-east", "north-west", "south-east", "south-west").includes(newDirection)) {
-        throw new Error("Pawn can only rotate to diagonal directions");
-    }
-
-    let newPiece = new PieceDescriptor(piece.getPieceType(), piece.getPieceColor(), newDirection);
-    this.setPiece([x,y], newPiece);
-
-    // Game state is valid, commit to history
-    this.history.push(this.toFEN());
+    this.currentPlayer = this.currentPlayer == "light" ? "dark" : "light";
   }
 
   copy() : GameState {
@@ -192,82 +143,39 @@ export class GameState {
 //
 class MoveSelector { 
   private game : GameState;
-  private selectedSquare : [number, number] | null = null;
-  private moveQueue : [[number, number], [number, number]] | null = null;
-  private rotateQueue : [[number, number], Direction] | null = null;
+  private selectedSquare : Position | null = null;
+  private selectedPiece : PieceDescriptor | null = null;
+  private actionQueue : Action | null = null;
 
 
   constructor( newGame : GameState ) {
     this.game = newGame.copy(); 
   }
 
-  queueMove( newPosition : [number, number]) {
+  queueOne( action : Action) {
     if (this.selectedSquare == null) {
       throw new Error("Cannot queue move when no square is selected");
     }
 
-    this.moveQueue = [this.selectedSquare, newPosition];
-    this.rotateQueue = null;
-  }
-
-  queueRotateCW() {
-    if (this.selectedSquare == null) {
-      throw new Error("Cannot queue move when no square is selected");
-    }
-
-    let position = this.selectedSquare;
-    let newDirection : Direction;
-
-    // If rotated once before, rotate again
-    if (this.rotateQueue != null) {
-      let rotation = this.rotateQueue[1];
-      newDirection = rotateClockwise(rotation);
-    } else {
-      newDirection = rotateClockwise(this.game.getPiece(position).getDirection());
-    }
-    
-    this.queueRotation(newDirection);
-  }
-
-  queueRotation( newDirection : Direction) {
-    this.moveQueue = null;
-    if (this.selectedSquare == null) {
-      throw new Error("Cannot queue move when no square is selected");
-    }
-
-    let position = this.selectedSquare;
-    let piece  = this.game.getPiece(position);
-
-    if (newDirection == piece.getDirection()) {
-      this.rotateQueue = null;
-    } else {
-      this.rotateQueue = [position, newDirection];
-    }
+    this.actionQueue = action;
   }
 
   dequeue() {
-    this.moveQueue = null;
-    this.rotateQueue = null;
+    this.actionQueue = null;
   }
 
   commitQueue() {
-    if (this.moveQueue != null) {
-      this.game.movePiece(this.moveQueue);
-    } else if (this.rotateQueue != null) {
-      this.game.rotatePiece(this.rotateQueue[0], this.rotateQueue[1]);
-    } else {
-      throw new Error("Cannot commit queue when there is nothing in the queue");
-    }
-
+    this.game.applyAction(this.actionQueue);
     this.dequeue();
     this.deselectSquare();
   }
 
-  selectSquare(position : [number, number]) {
+  selectSquare(position : Position) {
     if (this.selectedSquare != null) {
       throw new Error("Cannot select a square when one is already selected");
     }
     this.selectedSquare = position;
+    this.selectedPiece = this.game.getPiece(position);
   }
 
   deselectSquare() {
@@ -275,87 +183,41 @@ class MoveSelector {
       throw new Error("Cannot deselect a square when one is not selected");
     }
     this.selectedSquare = null;
+    this.selectedPiece = null;
     this.dequeue();
   }
 
-  getSelectedSquare() : [number, number] | null {
+  getSelectedPiece() : PieceDescriptor | null {
+    if (this.selectedSquare == null) {
+      throw new Error("Cannot get selected piece from square when one is not selected");
+    }
+    return this.selectedPiece;
+  }
+  
+  getSelectedSquare() : Position | null {
     return this.selectedSquare;
   }
 
-  getPotentialMoves() : Move[] {
-    let currentPos = this.getSelectedSquare();
-    if (currentPos == null) {
-      return [];
-    }
-
-    let potentialMoves = [];
-    for (let dx = -1 ; dx <= 1; dx++) {
-      for (let dy = -1; dy <= 1; dy++) {
-        if (dx == 0 && dy == 0) {
-          continue;
-        }
-        let move = [currentPos[0] + dx, currentPos[1] + dy];
-        if (move[0] >= 0 && move[0] < BOARD_SIZE && move[1] >= 0 && move[1] < BOARD_SIZE) {
-          potentialMoves.push([currentPos, move]);
-        }
-
-      }
-    }
-
-    // Remove moves if there is a rotation queued
-    if (this.rotateQueue != null) {
-      return [];
-    }
-
-    // Remove any moves that are illegal 
-    let legalMoves = [];
-    potentialMoves.forEach( (move) => {
-      let boardCopy = GameState.fromFEN(this.game.toFEN());
-      try {
-        boardCopy.movePiece(move);
-        legalMoves.push(move);
-      } catch (e) {
-        return
-      }
-    });
-
-    return legalMoves;
+  getPossibleActions () : Action[] {
+    throw new Error("Not implemented yet");
   }
 
-  getPossibleRotations() : Direction[] {
-    let currentPos = this.getSelectedSquare();
-    if (currentPos == null) {
-      return [];
-    }
-
-    let piece = this.game.getPiece(currentPos);
-    let possibleRotations = [];
-    if (piece.getPieceType() == "queen") {
-      possibleRotations = ["north", "east", "south", "west"];
-    } else if (piece.getPieceType() == "pawn") {
-      possibleRotations = ["north-east", "north-west", "south-east", "south-west"];
-    }
-
-    // Remove rotations if there is a move queued
-    if (this.moveQueue != null) {
-      return [];
-    }
-
-    // Remove any rotations that are illegal
-    let legalRotations = [];
-    possibleRotations.forEach( (rotation) => {
-      let boardCopy = GameState.fromFEN(this.game.toFEN());
-      try {
-        boardCopy.rotatePiece(currentPos, rotation);
-        legalRotations.push(rotation);
-      } catch (e) {
-        return
-      }
-    });
-  }
-
-  getPiece(position : [number, number]) : PieceDescriptor | null {
+  getPiece(position : Position) : PieceDescriptor | null {
     return this.game.getPiece(position);
+  }
+
+  // Returns a given piece on the queued board,
+  // useful for tracking states across uncommited moves
+  getQueuedPiece(position : Position) : PieceDescriptor | null {
+    let board = this.toQueuedBoard();
+    return board.getPiece(position);
+  }
+
+  getSelectedQueuedPiece() : PieceDescriptor | null {
+    if (this.selectedSquare == null) {
+      throw new Error("Cannot get selected piece from square when one is not selected");
+    }
+    return this.getQueuedPiece(this.selectedSquare);
   }
 
   toBoard() : GameState {
@@ -364,15 +226,8 @@ class MoveSelector {
 
   toQueuedBoard() : GameState {
     let board = this.game.copy();
-    try {
-      if (this.moveQueue != null) {
-        board.movePiece(this.moveQueue);
-      } else if (this.rotateQueue != null) {
-        board.rotatePiece(this.rotateQueue[0], this.rotateQueue[1]);
-      }
-    } catch (e) {
-      // Do nothing, board is invalid
-      console.log("The queued move is invalid, returning original board");
+    if (this.actionQueue != null) {
+      board.applyAction(this.actionQueue);
     }
     return board;
   }
@@ -411,36 +266,63 @@ export class Highlighter {
 
   }
 
-  interactWithSquare( position : [number , number]) {
+  interactWithSquare( newPosition : Position) {
     let selectedSquare = this.moveSelector.getSelectedSquare();
+
+    const actionActivated = (action : Action) => (
+        action.from().equals(selectedSquare) && // Action is from the selected square
+        action.to().equals(newPosition) && // Action is to the clicked square
+        !action.to().equals(action.from()) // Action does not start and end on the same square
+    );
+
     
     if (this.moveSelector.getSelectedSquare() == null) {
       // No square selected yet
       console.log("Select");
-      this.moveSelector.selectSquare(position);
-    } else if (compare(position, selectedSquare)) {
+      this.moveSelector.selectSquare(newPosition);
+
+    } else if (newPosition.equals(selectedSquare)) {
       // Square is already selected, 
       // but same square selected again
-      console.log("Rotate");
-      this.rotateCW();
-    } else if ( this.moveSelector.getPotentialMoves().some( (move) => compare(move[1], position))) {
-      // Square is already selected, 
-      // and not same square selected, 
-      // but an legal move square is selected
-      console.log("Move");
-      this.moveSelector.queueMove(position);
+      console.log("Try Rotate");
+      this.tryRotateCW();
+
+    } else if ( this.moveSelector.getPossibleActions().some( actionActivated )) {
+      // A legal action is activated (didn't click on the same square)
+      // Find the legal action
+      let action = this.moveSelector.getPossibleActions().find( actionActivated );
+      this.moveSelector.queueOne(action);
+
     } else {
-      // Square is already selected, 
-      // and not same square selected, 
-      // but a non-legal move square selected
+      // There are no legal actions activated, so unselect
       console.log("Unselect");
       this.unselect();
     }
     this.updateHighlightedSquares();
   }
 
-  rotateCW() {
-    this.moveSelector.queueRotateCW();
+  // Extend the state machine to keep track of the last rotation
+  private tryRotateCW() : boolean {
+    let square = this.moveSelector.getSelectedSquare();
+    let piece = this.moveSelector.getSelectedPiece();
+
+    if (piece == null) { return false; }
+
+    let originalDirection = piece.getDirection();
+    let queuedDirection = this.moveSelector.getSelectedQueuedPiece().getDirection();
+    let newDirection = queuedDirection.rotatedClockwise();
+
+    if (newDirection.equals(originalDirection)) {
+      // If the piece is rotated back to its original direction, unselect
+      console.log("But Unselected");
+      this.unselect();
+      return false;
+    }
+    
+    // Otherwise queue the rotation
+    let action = new Rotation(square, newDirection, piece);
+    this.moveSelector.queueOne(action);
+    return true;
   }
 
   private unselect() {
@@ -467,18 +349,20 @@ export class Highlighter {
       }
     }
 
-    this.moveSelector.getPotentialMoves().forEach( ([_, [x,y]]) => {
-      this.highlightSquares[x][y] = "main";
+    this.moveSelector.getPossibleActions().forEach( (action) => {
+      let [x,y] = action.to().toArray();
+      this.highlightSquares[y][x] = "main";
     });
 
     if (this.moveSelector.getSelectedSquare() != null) {
-      let [x,y] = this.moveSelector.getSelectedSquare();
-      this.highlightSquares[x][y] = "secondary";
+      let [x,y] = this.moveSelector.getSelectedSquare().toArray();
+      this.highlightSquares[y][x] = "secondary";
     }
   }
 
-  at( [x,y] : [number  , number] ) {
-    return this.highlightSquares[x][y];
+  at( position : Position ) {
+    let [x,y] = position.toArray();
+    return this.highlightSquares[y][x];
   }
 }
 
