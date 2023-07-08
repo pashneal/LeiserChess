@@ -19,6 +19,9 @@ export let boardState = derived(
 );
 
 export function interactWithSquare(x , y) {
-  highlighter.update((value) => {value.interactWithSquare(new Position(x,y)) ; return value})
+  highlighter.update((value) => {
+    value.interactWithSquare(new Position(x,y)) ; 
+    return value
+  })
 }
 

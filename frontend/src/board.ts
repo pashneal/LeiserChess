@@ -132,12 +132,10 @@ export class GameState {
 //
 // It has the following guarantees:
 //  0. An initial target square must be selected before a move or rotation can be queued
-//  1. A move or rotation can not be committed if illegal 
-//  2. A move or rotation can be queued without committing it
-//  3. A move or rotation can be removed without committing it
-//  4. A legal move or rotation can queued and observed using .toQueuedBoard() without committing it 
-//  5. All committed move or rotation can be observed using .toBoard() 
-//  6. Only one move or rotation can be queued at a time
+//  1. An action can not be committed if illegal 
+//  2. A legal action can be queued and observed using .toQueuedBoard() without committing it 
+//  3. All committed move or rotation can be observed using .toBoard() 
+//  4. Only one action can be queued at a time
 //
 //  Once committed, the queue is cleared and the square deselected
 //
