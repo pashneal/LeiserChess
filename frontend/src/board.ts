@@ -2,7 +2,8 @@ import type { PieceDescriptor } from "./piece";
 import { parseBoard } from "./parser";
 import { generateActions } from "./actionGenerator";
 import { BOARD_SIZE } from './constants';
-import type { Direction,  Position } from "./spatialUtils";
+import type { Direction} from "./spatialUtils";
+import { Position } from "./spatialUtils";
 import type { Action } from "./action";
 import { Rotation} from "./action";
 
@@ -17,8 +18,8 @@ export type Board  = Array<Array<PieceDescriptor | null>>;
 //  2. Actions are only allowed if they change the 
 //     game state to something not in the previous 2 moves
 //  3. Actions must be legal (i.e. no moving a piece that doesn't exist)
-//  4. The board is always in a state resulting from the composition of 
-//     legal moves and rotations after an initial input FEN
+//  4. The board is always in a state resulting from the application of 
+//     legal actions  after an initial input FEN
 //
 export class GameState {
   private board : Board;
@@ -201,7 +202,10 @@ class MoveSelector {
 
   getPossibleActions () : Action[] {
     if (this.selectedSquare === null) { return []; }
-    return generateActions(this.game, this.selectedSquare);
+    let actions = generateActions(this.game, this.selectedSquare);
+    return actions;
+
+    // TODO: Filter out actions that don't change state of board after zap
   }
 
   getPiece(position : Position) : PieceDescriptor | null {

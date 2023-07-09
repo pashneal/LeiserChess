@@ -4,6 +4,20 @@ import { Position, PawnDirection, QueenDirection } from './spatialUtils';
 import { Move, Rotation , Swap} from './action';
 import type { Action } from './action';
 
+export function generateActions( game : GameState, position : Position) : Array<Action> {
+  let actions = Array<Action>();
+  let rotations = generateRotations(game, position);
+  let moves = generateMoves(game, position);
+  let swaps = generateSwaps(game, position);
+
+  actions = actions.concat(rotations);
+  actions = actions.concat(moves);
+  actions = actions.concat(swaps);
+
+  actions.filter((action) => action.isValid());
+
+  return actions;
+}
 
 function generateSwaps(game : GameState, sourcePosition : Position) : Array<Action> {
   let piece = game.getPiece(sourcePosition);
@@ -35,11 +49,7 @@ function generateSwaps(game : GameState, sourcePosition : Position) : Array<Acti
         targetPiece
   )); 
   return swaps
-
-
 }
-    
-
 
 function generateMoves(game : GameState, position : Position) : Array<Action> { 
   let moves : Array<Action> = []; 
@@ -83,19 +93,3 @@ function generateRotations(game : GameState, position : Position) : Array<Action
   return rotations;
 }
 
-export function generateActions( game : GameState, position : Position) : Array<Action> {
-  let actions = Array<Action>();
-  let rotations = generateRotations(game, position);
-  let moves = generateMoves(game, position);
-  let swaps = generateSwaps(game, position);
-
-  actions = actions.concat(rotations);
-  actions = actions.concat(moves);
-  actions = actions.concat(swaps);
-
-  actions.filter((action) => action.isValid());
-  // The board state must be different after the action is applied
-
-
-  return actions;
-}
