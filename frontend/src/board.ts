@@ -1,5 +1,6 @@
 import type { PieceDescriptor } from "./piece";
 import { parseBoard } from "./parser";
+import { generateActions } from "./actionGenerator";
 import { BOARD_SIZE } from './constants';
 import type { Direction,  Position } from "./spatialUtils";
 import type { Action } from "./action";
@@ -51,7 +52,7 @@ export class GameState {
     for (let row of this.board) {
       for (let piece of row) {
 
-        if (piece == null) {
+        if (piece === null) {
           runningBlanks++;
         } else {
           if (runningBlanks > 0) {
@@ -70,7 +71,8 @@ export class GameState {
       fenString += "/";
     }
 
-    let currentPlayer = this.currentPlayer == "light" ? "W" : "B";
+    let currentPlayer = this.currentPlayer === "light" ? "W" : "B";
+    // Remove the last extra slash, append the player
     return fenString.slice(0, -1) + " " + currentPlayer;
 
   }
@@ -104,15 +106,16 @@ export class GameState {
 
     // Transform the board according to the action
     let board = action.appliedTo(this.toArray());
+    console.log("Action applied", action.toString())
     this.board = board;
 
     // None of the previous 2 states can be the same as the current state
-    if (this.history.slice(-2).some((state) => state == this.toFEN())) {
+    if (this.history.slice(-2).some((state) => state === this.toFEN())) {
       throw new Error("None of the previous 2 states can be the same as the current state");
     }
 
     this.history.push(this.toFEN());
-    this.currentPlayer = this.currentPlayer == "light" ? "dark" : "light";
+    this.currentPlayer = this.currentPlayer === "light" ? "dark" : "light";
   }
 
   copy() : GameState {
@@ -151,7 +154,7 @@ class MoveSelector {
   }
 
   queueOne( action : Action) {
-    if (this.selectedSquare == null) {
+    if (this.selectedSquare === null) {
       throw new Error("Cannot queue move when no square is selected");
     }
 
@@ -177,7 +180,7 @@ class MoveSelector {
   }
 
   deselectSquare() {
-    if (this.selectedSquare == null) {
+    if (this.selectedSquare === null) {
       throw new Error("Cannot deselect a square when one is not selected");
     }
     this.selectedSquare = null;
@@ -186,7 +189,7 @@ class MoveSelector {
   }
 
   getSelectedPiece() : PieceDescriptor | null {
-    if (this.selectedSquare == null) {
+    if (this.selectedSquare === null) {
       throw new Error("Cannot get selected piece from square when one is not selected");
     }
     return this.selectedPiece;
@@ -197,7 +200,8 @@ class MoveSelector {
   }
 
   getPossibleActions () : Action[] {
-    throw new Error("Not implemented yet");
+    if (this.selectedSquare === null) { return []; }
+    return generateActions(this.game, this.selectedSquare);
   }
 
   getPiece(position : Position) : PieceDescriptor | null {
@@ -212,7 +216,7 @@ class MoveSelector {
   }
 
   getSelectedQueuedPiece() : PieceDescriptor | null {
-    if (this.selectedSquare == null) {
+    if (this.selectedSquare === null) {
       throw new Error("Cannot get selected piece from square when one is not selected");
     }
     return this.getQueuedPiece(this.selectedSquare);
@@ -250,6 +254,7 @@ export type Highlight = "none" | "main" | "secondary";
 export class Highlighter {
   private moveSelector : MoveSelector;
   public highlightSquares : Highlight[][];
+  private lastQueuedDirection : Direction | null = null;
 
   constructor(board : GameState) {
     this.moveSelector = new MoveSelector(board);
@@ -274,10 +279,11 @@ export class Highlighter {
     );
 
     
-    if (this.moveSelector.getSelectedSquare() == null) {
+    if (this.moveSelector.getSelectedSquare() === null) {
       // No square selected yet
       console.log("Select");
       this.moveSelector.selectSquare(newPosition);
+      this.lastQueuedDirection = null;
 
     } else if (newPosition.equals(selectedSquare)) {
       // Square is already selected, 
@@ -286,45 +292,60 @@ export class Highlighter {
       this.tryRotateCW();
 
     } else if ( this.moveSelector.getPossibleActions().some( actionActivated )) {
-      // A legal action is activated (didn't click on the same square)
+      // A legal action is activated 
       // Find the legal action
       let action = this.moveSelector.getPossibleActions().find( actionActivated );
       this.moveSelector.queueOne(action);
+      this.lastQueuedDirection = null;
 
     } else {
       // There are no legal actions activated, so unselect
       console.log("Unselect");
       this.unselect();
+      this.lastQueuedDirection = null;
     }
     this.updateHighlightedSquares();
   }
 
   // Extend the state machine to keep track of the last rotation
   private tryRotateCW() : boolean {
-    let square = this.moveSelector.getSelectedSquare();
-    let piece = this.moveSelector.getSelectedPiece();
+    let selectedPiece = this.moveSelector.getSelectedPiece();
+    if (selectedPiece === null) {
+      return false; // No piece selected to rotate, so do nothing
+    }
 
-    if (piece == null) { return false; }
+    let originalDirection = selectedPiece.getDirection();
+    let newDirection : Direction; 
 
-    let originalDirection = piece.getDirection();
-    let queuedDirection = this.moveSelector.getSelectedQueuedPiece().getDirection();
-    let newDirection = queuedDirection.rotatedClockwise();
+    if (this.lastQueuedDirection === null) {
+      // No rotation queued yet, so queue default
+      newDirection = originalDirection.rotatedClockwise();
+    } else {
+      // Otherwise, Rotate the last queued rotation
+      newDirection = this.lastQueuedDirection.rotatedClockwise();
+    }
 
-    if (newDirection.equals(originalDirection)) {
-      // If the piece is rotated back to its original direction, unselect
-      console.log("But Unselected");
+    // Queue the rotation
+    let action = new Rotation(
+      this.moveSelector.getSelectedSquare(),
+      newDirection,
+      selectedPiece
+    );
+
+    if (originalDirection.equals(newDirection)) {
+      // If the rotation is the same as the original, then unselect
+      console.log(".. Unselect");
       this.unselect();
       return false;
     }
-    
-    // Otherwise queue the rotation
-    let action = new Rotation(square, newDirection, piece);
+
     this.moveSelector.queueOne(action);
-    return true;
+    this.lastQueuedDirection = newDirection;
+
   }
 
   private unselect() {
-    if (this.moveSelector.getSelectedSquare() == null) {
+    if (this.moveSelector.getSelectedSquare() === null) {
       return;
     }
     this.moveSelector.deselectSquare();
@@ -348,13 +369,13 @@ export class Highlighter {
     }
 
     this.moveSelector.getPossibleActions().forEach( (action) => {
-      let [x,y] = action.to().toArray();
-      this.highlightSquares[y][x] = "main";
+      let [col,row] = action.to().toArray();
+      this.highlightSquares[row][col] = "main";
     });
 
     if (this.moveSelector.getSelectedSquare() != null) {
-      let [x,y] = this.moveSelector.getSelectedSquare().toArray();
-      this.highlightSquares[y][x] = "secondary";
+      let [col,row] = this.moveSelector.getSelectedSquare().toArray();
+      this.highlightSquares[row][col] = "secondary";
     }
   }
 
@@ -367,7 +388,7 @@ export class Highlighter {
 // Small sanity test
 let openingPosition = "ss7/3nwse3/2nwse4/1nwse3NW1/1se3NWSE1/4NWSE2/3NWSE3/7NN W";
 console.assert(
-  GameState.fromFEN(openingPosition).toFEN() == openingPosition,
+  GameState.fromFEN(openingPosition).toFEN() === openingPosition,
   "FEN string for opening position is incorrect"
 );
 

@@ -8,9 +8,6 @@ export class Position  {
   constructor(x : number, y : number) {
     this.x = x;
     this.y = y;
-    if (!this.isWithinBounds()) {
-      throw new Error("Position out of bounds");
-    }
   }
 
   getX() : number {
@@ -26,7 +23,7 @@ export class Position  {
   }
 
   equals(other : Position) : boolean {
-    return this.x == other.x && this.y == other.y;
+    return this.x === other.x && this.y === other.y;
   }
 
   isAdjacentTo(other : Position) : boolean {
@@ -85,7 +82,7 @@ export class Direction {
   direction : string;
   rotatedDirectionMap = {};
   copy() : this {
-    return new Direction(this.direction) as this;
+    throw new Error("Cannot copy a Direction, did you mean to create a subclass?");
   }
 
   constructor(direction: string) {
@@ -100,28 +97,29 @@ export class Direction {
 
   rotatedCounterClockwise() : this {
     let newDirection = this.copy();
-    newDirection.rotatedClockwise();
-    newDirection.rotatedClockwise();
-    newDirection.rotatedClockwise();
+    newDirection = newDirection.rotatedClockwise();
+    newDirection = newDirection.rotatedClockwise();
+    newDirection = newDirection.rotatedClockwise();
     return newDirection;
   }
 
   rotated180() : this {
     let newDirection = this.copy();
-    newDirection.rotatedClockwise();
-    newDirection.rotatedClockwise();
+    newDirection = newDirection.rotatedClockwise();
+    newDirection = newDirection.rotatedClockwise();
     return newDirection;
   }
 
   relativeRotationTo(other : this) : RelativeRotation | null {
-    if (this.direction == other.direction) {
+
+    if (this.direction === other.direction) {
       return null;
-    } else if (this.rotatedClockwise().direction == other.direction) {
-      return "R";
-    } else if (this.rotatedCounterClockwise().direction == other.direction) {
-      return "L";
-    } else if (this.rotated180().direction == other.direction) {
-      return "U";
+    } else if (this.rotatedClockwise().direction === other.direction) {
+      return "R" as RelativeRotation;
+    } else if (this.rotatedCounterClockwise().direction === other.direction) {
+      return "L" as RelativeRotation;
+    } else if (this.rotated180().direction === other.direction) {
+      return "U" as RelativeRotation;
     }
   }
 
@@ -141,7 +139,7 @@ export class Direction {
   }
 
   equals(other : this) : boolean {
-    return this.direction == other.direction;
+    return this.direction === other.direction;
   }
 }
 
@@ -153,6 +151,9 @@ export class QueenDirection extends Direction {
     "east" : "south",
     "south" : "west",
     "west" : "north"
+  }
+  copy() : this {
+    return new QueenDirection(this.direction) as this;
   }
   constructor(direction : string) {
     super(direction);
@@ -172,6 +173,9 @@ export class PawnDirection extends Direction {
     "south-east" : "south-west",
     "south-west" : "north-west",
     "north-west" : "north-east"
+  }
+  copy() : this {
+    return new PawnDirection(this.direction) as this;
   }
   constructor(direction : string) {
     super(direction);

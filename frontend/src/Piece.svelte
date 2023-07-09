@@ -6,9 +6,9 @@
 </script>
 
 <div class="{color} {name} {direction}"> 
-  {#if name == "queen"}
+  {#if name === "queen"}
     ♕
-  {:else if name == "pawn"}
+  {:else if name === "pawn"}
     <svg viewBox="0 0 100 100" >
         <polygon class="polygon-shape" points="25,25 75,75 75,25" />
     </svg>

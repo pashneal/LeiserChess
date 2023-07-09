@@ -16,7 +16,7 @@ export class PieceDescriptor {
   }
 
   getDirection() : Direction {
-    if (this.direction == null) {
+    if (this.direction === null) {
       throw new Error("Cannot get direction of a piece that doesn't have a direction");
     }
     return this.direction;
@@ -50,7 +50,7 @@ export class PieceDescriptor {
   }
 
   toString() : string {
-    let lowercase = this.pieceColor == "dark";
+    let lowercase = this.pieceColor === "dark";
     let direction : string;
     let composedString : string  = "";
 
@@ -115,7 +115,7 @@ export class PieceDescriptor {
   }
 
   nw() : PieceDescriptor {
-    //assert(this.pieceType == "pawn");
+    //assert(this.pieceType === "pawn");
     return new PieceDescriptor(
       this.pieceType, 
       this.pieceColor, 
@@ -124,7 +124,7 @@ export class PieceDescriptor {
   }
 
   sw() : PieceDescriptor {
-    //assert(this.pieceType == "pawn");
+    //assert(this.pieceType === "pawn");
     return new PieceDescriptor(
       this.pieceType, 
       this.pieceColor, 
@@ -133,7 +133,7 @@ export class PieceDescriptor {
   }
 
   ne() : PieceDescriptor {
-    //assert(this.pieceType == "pawn");
+    //assert(this.pieceType === "pawn");
     return new PieceDescriptor(
       this.pieceType, 
       this.pieceColor, 
@@ -150,7 +150,7 @@ export class PieceDescriptor {
   }
 
   north() : PieceDescriptor {
-    //assert(this.pieceType == "queen");
+    //assert(this.pieceType === "queen");
     return new PieceDescriptor(
       this.pieceType,
       this.pieceColor,
@@ -159,7 +159,7 @@ export class PieceDescriptor {
   }
 
   south() : PieceDescriptor {
-    //assert(this.pieceType == "queen");
+    //assert(this.pieceType === "queen");
     return new PieceDescriptor(
       this.pieceType, 
       this.pieceColor, 
@@ -168,7 +168,7 @@ export class PieceDescriptor {
   }
 
   east() : PieceDescriptor {
-    //assert(this.pieceType == "queen");
+    //assert(this.pieceType === "queen");
     return new PieceDescriptor(
       this.pieceType,
       this.pieceColor,
@@ -177,7 +177,7 @@ export class PieceDescriptor {
   }
 
   west() : PieceDescriptor {
-    //assert(this.pieceType == "queen");
+    //assert(this.pieceType === "queen");
     return new PieceDescriptor(
       this.pieceType,
       this.pieceColor,
@@ -188,55 +188,55 @@ export class PieceDescriptor {
 
 
 export function fen(descriptor : string | null) {
-  if (descriptor == null) {
+  if (descriptor === null) {
     return null
   }
-  if (descriptor == "NN") {
+  if (descriptor === "NN") {
     return PieceDescriptor.light().queen().north()
   }
-  if (descriptor == "SS") {
+  if (descriptor === "SS") {
     return PieceDescriptor.light().queen().south()
   }
-  if (descriptor == "EE") {
+  if (descriptor === "EE") {
     return PieceDescriptor.light().queen().east()
   }
-  if (descriptor == "WW") {
+  if (descriptor === "WW") {
     return PieceDescriptor.light().queen().west()
   }
-  if (descriptor == "nn") {
+  if (descriptor === "nn") {
     return PieceDescriptor.dark().queen().north()
   }
-  if (descriptor == "ss") {
+  if (descriptor === "ss") {
     return PieceDescriptor.dark().queen().south()
   }
-  if (descriptor == "ww") {
+  if (descriptor === "ww") {
     return PieceDescriptor.dark().queen().west()
   }
-  if (descriptor == "ee") {
+  if (descriptor === "ee") {
     return PieceDescriptor.dark().queen().east()
   }
-  if (descriptor == "NW") {
+  if (descriptor === "NW") {
     return PieceDescriptor.light().pawn().nw()
   }
-  if (descriptor == "NE") {
+  if (descriptor === "NE") {
     return PieceDescriptor.light().pawn().ne()
   }
-  if (descriptor == "SW") {
+  if (descriptor === "SW") {
     return PieceDescriptor.light().pawn().sw()
   }
-  if (descriptor == "SE") {
+  if (descriptor === "SE") {
     return PieceDescriptor.light().pawn().se()
   }
-  if (descriptor == "se") {
+  if (descriptor === "se") {
     return PieceDescriptor.dark().pawn().se()
   }
-  if (descriptor == "sw") {
+  if (descriptor === "sw") {
     return PieceDescriptor.dark().pawn().sw()
   }
-  if (descriptor == "ne") {
+  if (descriptor === "ne") {
     return PieceDescriptor.dark().pawn().ne()
   }
-  if (descriptor == "nw") {
+  if (descriptor === "nw") {
     return PieceDescriptor.dark().pawn().nw()
   }
   return null

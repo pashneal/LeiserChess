@@ -22,10 +22,9 @@ export interface Action {
   to() : Position
 
   /*
-   * @param piece the piece that is being moved
    * @return a string representation of the action, given the piece that is being moved
    */
-  toString(piece : PieceDescriptor) : string
+  toString() : string
 
   /*
    * @return true if the action is valid, false otherwise
@@ -70,7 +69,7 @@ export class Move implements Action {
   static fromString(actionString : string, piece : PieceDescriptor) : Move {
     let regex = /^([a-zA-Z]+)([0-9]+)([a-zA-Z]+)([0-9]+)$/;
     let match = actionString.match(regex);
-    if (match == null) {
+    if (match === null) {
       throw new Error("Invalid Move string");
     }
 
@@ -98,12 +97,12 @@ export class Move implements Action {
 
 export class Rotation implements Action {
 
-  constructor(private fromPosition: Position, private newDirection : Direction,private piece : PieceDescriptor) {}
+  constructor(private fromPosition: Position, private newDirection : Direction, private piece : PieceDescriptor) {}
 
   static fromString(actionString : string, piece : PieceDescriptor) : Rotation {
     let regex = /^([a-zA-Z]+)([0-9]+)(U|L|R)$/;
     let match = actionString.match(regex);
-    if (match == null) {
+    if (match === null) {
       throw new Error("Invalid Rotation string");
     }
 
@@ -114,7 +113,12 @@ export class Rotation implements Action {
   }
 
   transformedPiece() : PieceDescriptor {
-    return new PieceDescriptor(this.piece.getPieceType(), this.piece.getPieceColor(), this.newDirection);
+    let piece = new PieceDescriptor(
+      this.piece.getPieceType(), 
+      this.piece.getPieceColor(), 
+      this.newDirection
+    );
+    return piece;
   }
 
   from() : Position {
@@ -125,11 +129,11 @@ export class Rotation implements Action {
     return this.fromPosition;
   }
 
-  toString(piece : PieceDescriptor) : string {
-    let oldDirection = piece.getDirection();
+  toString() : string {
+    let oldDirection = this.piece.getDirection();
     let relativeRotation = this.newDirection.relativeRotationTo(oldDirection);
-    if (relativeRotation == null) {
-      throw new Error("Invalid rotation");
+    if (relativeRotation === null) {
+      throw new Error("Invalid rotation, cannot rotate to the same direction");
     }
     return this.fromPosition.toString() + relativeRotation;
   }

@@ -6,7 +6,7 @@ export function parsePiece(input) {
   // Get first two characters of input
   let descriptor = input.slice(0, 2);
   let piece = fen(descriptor);
-  if (piece == null) {
+  if (piece === null) {
     return [null, input];
   }
 
@@ -14,7 +14,7 @@ export function parsePiece(input) {
 }
 
 export function parseRow(input) {
-  if (input[0] == "/") {
+  if (input[0] === "/") {
     return ["/", input.slice(1)];
   }
   return [null, input];
@@ -83,7 +83,7 @@ export function parseBoard(input) {
     }
   }
   currentPlayer = currentPlayer?.toLowerCase();
-  currentPlayer = currentPlayer == "w" ? "light" : "dark";
+  currentPlayer = currentPlayer === "w" ? "light" : "dark";
   return [board, currentPlayer];
 }
 
