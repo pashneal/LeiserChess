@@ -94,7 +94,8 @@ export function generateActions( game : GameState, position : Position) : Array<
   actions = actions.concat(swaps);
 
   actions.filter((action) => action.isValid());
-  // TODO: The board state must be different after the action is applied
+  // The board state must be different after the action is applied
+
 
   return actions;
 }
