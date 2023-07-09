@@ -7,7 +7,6 @@ type Board  = Array<Array<PieceDescriptor | null>>;
 
 
 export interface Action {
-
   /*
    * Returns a new piece descriptor that is the result of applying the action on an input piece
    * @return the new piece descriptor
@@ -41,11 +40,9 @@ export interface Action {
   appliedTo(board : Board) : Board
 }
 
-
 // Represents the move action, that is, moving a piece from one position to another
 // cannot move to the same position as another piece, nor its current position
 export class Move implements Action {
-
   constructor(
     private fromPosition : Position, 
     private toPosition : Position, 
@@ -94,12 +91,10 @@ export class Move implements Action {
     newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = null;
     return newBoard;
   }
-
 }
 
 
 export class Rotation implements Action {
-
   constructor(private fromPosition: Position, private newDirection : Direction, private piece : PieceDescriptor) {}
 
   static fromString(actionString : string, piece : PieceDescriptor) : Rotation {
@@ -151,5 +146,58 @@ export class Rotation implements Action {
     newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.transformedPiece();
     return newBoard;
   }
+}
 
+// Represents the swap action, that is, moving a piece from one position to another, but 
+// there is a piece at the destination position
+export class Swap implements Action {
+  constructor(
+    private fromPosition : Position, 
+    private toPosition : Position, 
+    private sourcePiece : PieceDescriptor,
+    private targetPiece : PieceDescriptor
+  ) {}
+
+  transformedPiece() : PieceDescriptor {
+    return this.sourcePiece;
+  }
+
+  from() : Position {
+    return this.fromPosition;
+  }
+
+  to() : Position {
+    return this.toPosition;
+  }
+
+  toString() : string {
+    return this.fromPosition.toString() + this.toPosition.toString();
+  }
+
+
+  static fromString(actionString : string, sourcePiece : PieceDescriptor, targetPiece: PieceDescriptor) : Swap {
+    let regex = /^([a-zA-Z]+)([0-9]+)([a-zA-Z]+)([0-9]+)$/;
+    let match = actionString.match(regex);
+    if (match === null) {
+      throw new Error("Invalid Move string");
+    }
+
+    let fromPosition = Position.fromString(match[1]! + match[2]!);
+    let toPosition = Position.fromString(match[3]! + match[4]!);
+
+    return new Swap(fromPosition, toPosition, sourcePiece, targetPiece); 
+  }
+
+  isValid() : boolean {
+    let isAdjacent = this.fromPosition.isAdjacentTo(this.toPosition);
+    let isDistinct = !this.fromPosition.equals(this.toPosition);
+    return isDistinct && isAdjacent;
+  }
+
+  appliedTo(board : Board ) : Board {
+    let newBoard = board; 
+    newBoard[this.toPosition.getY()]![this.toPosition.getX()] = this.sourcePiece;
+    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.targetPiece;
+    return newBoard;
+  }
 }
