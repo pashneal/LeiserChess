@@ -37,23 +37,24 @@ export class Position  {
   static fromString(positionString : string) : Position {
     // Must be in the form of some letters followed by a number
     // Verified by regex (and extensible to larger boards if necessary)
-    let regex = RegExp("[a-ZA-Z]+[1-9][0-9]*$");
+    let regex = RegExp("[a-zA-Z]+[1-9][0-9]*$");
     if (!regex.test(positionString)) {
       throw new Error("Invalid position string");
     }
     
     // Parse letter part
     let letterPart = positionString.match(/[a-zA-Z]+/);
+    let match = letterPart[0];
     // Convert to number
     let x = 0;
     for (let i = 0; i < letterPart[0].length; i++) {
       x *= 26;
-      x += letterPart[0].charCodeAt(i) - 'a'.charCodeAt(0) + 1;
+      x += match.charCodeAt(i) - 'a'.charCodeAt(0);
     }
 
     // Parse number part
     let numberPart = positionString.match(/[0-9]+/);
-    let y = parseInt(numberPart[0]);
+    let y = parseInt(numberPart[0]) - 1;
 
     return new Position(x, y);
   }
@@ -64,16 +65,22 @@ export class Position  {
     let letterPart = "";
     let numberPart = "";
 
-    while (x > 0) {
-      letterPart += String.fromCharCode('a'.charCodeAt(0) + (x - 1) % 26);
-      x = Math.floor(x / 26);
+    while (x >= 0) {
+      letterPart = String.fromCharCode('a'.charCodeAt(0) + (x % 26)) + letterPart;
+      x = Math.floor(x / 26) - 1;
     }
 
-    numberPart = y.toString();
+    numberPart = (y + 1).toString();
 
     return letterPart + numberPart;
   }
 }
+
+// Sanity checks for Position
+console.assert(Position.fromString("a1").toString() === "a1");
+console.log( Position.fromString("a1") , Position.fromString("a1").toString() );
+console.assert(Position.fromString("a2").getX() === 0);
+console.assert(Position.fromString("b4").getY() === 3);
 
 export type RelativeRotation = "U" | "L" | "R";
 
