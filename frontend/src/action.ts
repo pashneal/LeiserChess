@@ -201,3 +201,44 @@ export class Swap implements Action {
     return newBoard;
   }
 }
+
+// Represents the zap action, that is, from a given position and piece 
+// the laser moves in a straight line until it hits/reflects off another piece or
+// hits the board edge
+export class Zap implements Action {
+  constructor(
+    private initialPosition : Position, 
+    private piece : PieceDescriptor,
+  ) {}
+
+  transformedPiece() : PieceDescriptor {
+    return this.piece;
+  }
+
+  from() : Position {
+    return this.initialPosition;
+  }
+
+  to() : Position {
+    return this.initialPosition;
+  }
+
+  toString() : string {
+    throw new Error("Zaps have no standard representation as a FEN string");
+  }
+
+  static fromString(actionString : string, sourcePiece : PieceDescriptor, targetPiece: PieceDescriptor) : Swap {
+    throw new Error("Zaps have no standard representation as a FEN string");
+  }
+
+  isValid() : boolean {
+    return this.initialPosition.isWithinBounds();
+  }
+
+  appliedTo(board : Board ) : Board {
+    let newBoard = board; 
+    newBoard[this.toPosition.getY()]![this.toPosition.getX()] = this.sourcePiece;
+    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.targetPiece;
+    return newBoard;
+  }
+}
