@@ -7,6 +7,7 @@ import type { Action } from "./action";
 import { Rotation} from "./action";
 
 export type Player = "light" | "dark";
+export type Board  = Array<Array<PieceDescriptor | null>>;
 
 
 // GameState is a class that represents the state of the LeiserChess game
@@ -20,19 +21,15 @@ export type Player = "light" | "dark";
 //     legal moves and rotations after an initial input FEN
 //
 export class GameState {
-  private board : PieceDescriptor[][];
+  private board : Board;
   private history : Array<String> 
   private currentPlayer : Player;
 
   private constructor() {
-    this.board = [];
     this.currentPlayer = "light";
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      this.board[i] = [];
-      for (let j = 0; j < BOARD_SIZE; j++) {
-        this.board[i][j] = null;
-      }
-    }
+    this.history = [];
+    // Fill 2D array with null
+    this.board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
   }
 
   static fromFEN(fenString : string) {
@@ -79,15 +76,15 @@ export class GameState {
 
   getPiece(position : Position) : PieceDescriptor | null {
     let [x, y] = [position.getX(), position.getY()];
-    return this.board[y][x];
+    return this.board[y]![x]!;
   }
 
   private setPiece([x,y] : [number, number], piece : PieceDescriptor | null) {
-    this.board[y][x] = piece;
+    this.board[y]![x] = piece;
   }
 
   // Returns a copy of the board state's internals
-  toArray() : PieceDescriptor[][] {
+  toArray() : Board { 
     let boardState = GameState.fromFEN(this.toFEN());
     return boardState.board;
   }
@@ -166,7 +163,11 @@ class MoveSelector {
   }
 
   commitQueue() {
-    this.game.applyAction(this.actionQueue);
+    if (this.actionQueue === null) {
+      throw new Error("Cannot commit queue when no action is queued");
+    }
+
+    this.game.applyAction(this.actionQueue!);
     this.dequeue();
     this.deselectSquare();
   }
@@ -251,22 +252,21 @@ export type Highlight = "none" | "main" | "secondary";
 // Furthermore this class provides a way to make moves without commiting them to the main
 // game state and observe the changes via getBoard() property
 //
+export type HighlightBoard = Highlight[][];
+
 export class Highlighter {
   private moveSelector : MoveSelector;
-  public highlightSquares : Highlight[][];
+  public highlightSquares : HighlightBoard;
   private lastQueuedDirection : Direction | null = null;
 
   constructor(board : GameState) {
     this.moveSelector = new MoveSelector(board);
     this.highlightSquares = [];
 
-    for (let i = 0; i < BOARD_SIZE; i++) {
-      this.highlightSquares[i] = [];
-      for (let j = 0; j < BOARD_SIZE; j++) {
-        this.highlightSquares[i][j] = "none";
-      }
-    }
-
+    // Fill the highlightSquares array with "none" values
+    Array.from(Array(8), () => Array(8).fill("none")).forEach((row) => {
+      this.highlightSquares.push(row);
+    });
   }
 
   interactWithSquare( newPosition : Position) {
@@ -294,7 +294,7 @@ export class Highlighter {
     } else if ( this.moveSelector.getPossibleActions().some( actionActivated )) {
       // A legal action is activated 
       // Find the legal action
-      let action = this.moveSelector.getPossibleActions().find( actionActivated );
+      let action = this.moveSelector.getPossibleActions().find( actionActivated )!;
       this.moveSelector.queueOne(action);
       this.lastQueuedDirection = null;
 
@@ -327,7 +327,7 @@ export class Highlighter {
 
     // Queue the rotation
     let action = new Rotation(
-      this.moveSelector.getSelectedSquare(),
+      this.moveSelector.getSelectedSquare()!,
       newDirection,
       selectedPiece
     );
@@ -341,6 +341,7 @@ export class Highlighter {
 
     this.moveSelector.queueOne(action);
     this.lastQueuedDirection = newDirection;
+    return true;
 
   }
 
@@ -364,24 +365,24 @@ export class Highlighter {
   private updateHighlightedSquares() {
     for (let i = 0; i < BOARD_SIZE; i++) {
       for (let j = 0; j < BOARD_SIZE; j++) {
-        this.highlightSquares[i][j] = "none";
+        this.highlightSquares[i]![j] = "none";
       }
     }
 
     this.moveSelector.getPossibleActions().forEach( (action) => {
       let [col,row] = action.to().toArray();
-      this.highlightSquares[row][col] = "main";
+      this.highlightSquares[row]![col] = "main";
     });
 
     if (this.moveSelector.getSelectedSquare() != null) {
-      let [col,row] = this.moveSelector.getSelectedSquare().toArray();
-      this.highlightSquares[row][col] = "secondary";
+      let [col,row] = this.moveSelector.getSelectedSquare()!.toArray();
+      this.highlightSquares[row]![col] = "secondary";
     }
   }
 
   at( position : Position ) {
     let [x,y] = position.toArray();
-    return this.highlightSquares[y][x];
+    return this.highlightSquares[y]![x];
   }
 }
 

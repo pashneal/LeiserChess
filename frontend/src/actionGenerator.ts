@@ -4,8 +4,8 @@ import { Move, Rotation } from './action';
 import type { Action } from './action';
 
 
-function generateMoves(game : GameState, position : Position) : Action[] {
-  let moves = []; 
+function generateMoves(game : GameState, position : Position) : Array<Action> { 
+  let moves : Array<Action> = []; 
   let piece = game.getPiece(position);
   if (piece === null) {
     return moves;
@@ -30,7 +30,7 @@ function generateMoves(game : GameState, position : Position) : Action[] {
   return moves;
 }
 
-function generateRotations(game : GameState, position : Position) : Action[] {
+function generateRotations(game : GameState, position : Position) : Array<Action>{
   let piece = game.getPiece(position);
   if (piece === null) { return []; }
 
@@ -40,14 +40,15 @@ function generateRotations(game : GameState, position : Position) : Action[] {
     piece.rotated180().getDirection()
   ];
 
-  let rotations = directions.map((direction) => new Rotation(position, direction, piece));
+  let rotations = directions.map((direction) => new Rotation(position, direction, piece!));
   return rotations;
 }
 
-export function generateActions( game : GameState, position : Position) : Action[] {
-  let actions = [];
+export function generateActions( game : GameState, position : Position) : Array<Action> {
+  let actions = Array<Action>();
   let rotations = generateRotations(game, position);
   let moves = generateMoves(game, position);
+
   actions = actions.concat(rotations);
   actions = actions.concat(moves);
   actions.filter((action) => action.isValid());

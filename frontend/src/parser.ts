@@ -1,8 +1,11 @@
-import { fen } from './piece';
+import { fen , PieceDescriptor} from "./piece";
+import { BOARD_SIZE } from "./constants"; 
+import { Board , Player} from "./board";
+
 
 // Returns a transformed string and a
 // captured input if it matches
-export function parsePiece(input) {
+export function parsePiece(input : string) : [null | PieceDescriptor, string]{
   // Get first two characters of input
   let descriptor = input.slice(0, 2);
   let piece = fen(descriptor);
@@ -13,15 +16,15 @@ export function parsePiece(input) {
   return [piece, input.slice(2)];
 }
 
-export function parseRow(input) {
+export function parseRow(input : string) : [null | string, string]{
   if (input[0] === "/") {
     return ["/", input.slice(1)];
   }
   return [null, input];
 }
 
-export function parseNumber(input) {
-  let number = parseInt(input[0]);
+export function parseNumber(input : string) : [null | number, string]{
+  let number = parseInt(input[0]!);
   if (isNaN(number)) {
     return [null, input];
   }
@@ -33,7 +36,7 @@ export function parseNumber(input) {
   return [1, input];
 }
 
-export function parseWhitespace(input) {
+export function parseWhitespace(input : string) : [null | string, string] {
   let match = input.match(/^\s+/);
   if (match) {
     return [match[0], input.slice(match[0].length)];
@@ -42,7 +45,7 @@ export function parseWhitespace(input) {
 }
 
 
-export function parseCurrentPlayer(input) {
+export function parseCurrentPlayer(input : string) : [null | string, string]{
   let match = input.match(/^[wb]/i);
   if (match) {
     return [match[0], input.slice(match[0].length)];
@@ -51,8 +54,9 @@ export function parseCurrentPlayer(input) {
 }
 
 
-export function parseBoard(input) {
-  let board = Array(8).fill(null).map(() => Array(8).fill(null));
+export function parseBoard(input : string) : [Board, Player]{
+
+  let board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
   let row = 0;
   let col = 0;
   let currentPlayer;
@@ -63,7 +67,7 @@ export function parseBoard(input) {
     let [whitespaceCaptured, whitespaceMatched] = parseWhitespace(input);
     let [currentPlayerCaptured, currentPlayerMatched] = parseCurrentPlayer(input);
     if  (newPiece) {
-      board[row][col] = newPiece;
+      board[row]![col] = newPiece;
       input = pieceMatched;
       col += 1;
     } else if (numberCaptured){
@@ -84,6 +88,6 @@ export function parseBoard(input) {
   }
   currentPlayer = currentPlayer?.toLowerCase();
   currentPlayer = currentPlayer === "w" ? "light" : "dark";
-  return [board, currentPlayer];
+  return [board, currentPlayer as Player];
 }
 

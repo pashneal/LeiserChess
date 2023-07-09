@@ -1,6 +1,5 @@
 import { BOARD_SIZE } from "./constants";
 
-// Guards against invalid positions
 export class Position  {
   private x : number;
   private y : number;
@@ -22,7 +21,8 @@ export class Position  {
     return [this.x, this.y];
   }
 
-  equals(other : Position) : boolean {
+  equals(other : Position | null) : boolean {
+    if  (other === null) { return false; }
     return this.x === other.x && this.y === other.y;
   }
 
@@ -43,17 +43,17 @@ export class Position  {
     }
     
     // Parse letter part
-    let letterPart = positionString.match(/[a-zA-Z]+/);
-    let match = letterPart[0];
+    let letterPart = positionString.match(/[a-zA-Z]+/)!;
+    let match = letterPart[0]!;
     // Convert to number
     let x = 0;
-    for (let i = 0; i < letterPart[0].length; i++) {
+    for (let i = 0; i < match.length; i++) {
       x *= 26;
       x += match.charCodeAt(i) - 'a'.charCodeAt(0);
     }
 
     // Parse number part
-    let numberPart = positionString.match(/[0-9]+/);
+    let numberPart = positionString.match(/[0-9]+/)!;
     let y = parseInt(numberPart[0]) - 1;
 
     return new Position(x, y);
@@ -78,16 +78,15 @@ export class Position  {
 
 // Sanity checks for Position
 console.assert(Position.fromString("a1").toString() === "a1");
-console.log( Position.fromString("a1") , Position.fromString("a1").toString() );
 console.assert(Position.fromString("a2").getX() === 0);
 console.assert(Position.fromString("b4").getY() === 3);
 
 export type RelativeRotation = "U" | "L" | "R";
 
 export class Direction { 
-  allowedDirections = [];
-  direction : string;
-  rotatedDirectionMap = {};
+  allowedDirections : Array<string> = [];
+  direction : string = "";
+  rotatedDirectionMap : Map<string, string> = new Map<string, string>();
   copy() : this {
     throw new Error("Cannot copy a Direction, did you mean to create a subclass?");
   }
@@ -98,7 +97,7 @@ export class Direction {
 
   rotatedClockwise() : this {
     let newDirection = this.copy();
-    newDirection.direction = this.rotatedDirectionMap[this.direction];
+    newDirection.direction = this.rotatedDirectionMap.get(this.direction)!;
     return newDirection;
   }
 
@@ -128,6 +127,7 @@ export class Direction {
     } else if (this.rotated180().direction === other.direction) {
       return "U" as RelativeRotation;
     }
+    throw new Error("Directions are not orthogonal");
   }
 
   rotatedBy(relativeRotation : RelativeRotation) : this {
@@ -145,21 +145,21 @@ export class Direction {
     return this.direction;
   }
 
-  equals(other : this) : boolean {
+  equals(other : this | null) : boolean {
+    if (other === null) { return  false; }
     return this.direction === other.direction;
   }
 }
 
 export class QueenDirection extends Direction {
-  direction : string;
-  allowedDirections = ["north", "south", "east", "west"];
-  rotatedDirectionMap = {
-    "north" : "east",
-    "east" : "south",
-    "south" : "west",
-    "west" : "north"
-  }
-  copy() : this {
+  override allowedDirections = ["north", "south", "east", "west"];
+  override rotatedDirectionMap : Map<string, string> = new Map<string, string>(
+    [["north" , "east"],
+    ["east" , "south"],
+    ["south" , "west"],
+    ["west" , "north"]]
+  )
+  override copy() : this {
     return new QueenDirection(this.direction) as this;
   }
   constructor(direction : string) {
@@ -173,15 +173,15 @@ export class QueenDirection extends Direction {
 
 
 export class PawnDirection extends Direction {
-  direction : string;
-  allowedDirections = ["north-east", "north-west", "south-east", "south-west"];
-  rotatedDirectionMap = {
-    "north-east" : "south-east",
-    "south-east" : "south-west",
-    "south-west" : "north-west",
-    "north-west" : "north-east"
-  }
-  copy() : this {
+  override allowedDirections = ["north-east", "north-west", "south-east", "south-west"];
+  override rotatedDirectionMap = new Map<string, string>(
+    [["north-east" , "south-east"],
+    ["south-east" , "south-west"],
+    ["south-west" , "north-west"],
+    ["north-west" , "north-east"]]
+  )
+
+  override copy() : this {
     return new PawnDirection(this.direction) as this;
   }
   constructor(direction : string) {

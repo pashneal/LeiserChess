@@ -3,6 +3,9 @@ import type { RelativeRotation } from './spatialUtils';
 import { Direction , Position} from './spatialUtils';
 
 
+type Board  = Array<Array<PieceDescriptor | null>>;
+
+
 export interface Action {
 
   /*
@@ -35,7 +38,7 @@ export interface Action {
    * @param the board that the action is being applied to
    * @return the board after the action is applied
    */
-  appliedTo(board : PieceDescriptor[][]) : PieceDescriptor[][]
+  appliedTo(board : Board) : Board
 }
 
 
@@ -73,8 +76,8 @@ export class Move implements Action {
       throw new Error("Invalid Move string");
     }
 
-    let fromPosition = Position.fromString(match[1] + match[2]);
-    let toPosition = Position.fromString(match[3] + match[4]);
+    let fromPosition = Position.fromString(match[1]! + match[2]!);
+    let toPosition = Position.fromString(match[3]! + match[4]!);
 
     return new Move(fromPosition, toPosition, piece);
   }
@@ -85,10 +88,10 @@ export class Move implements Action {
     return isDistinct && isAdjacent;
   }
 
-  appliedTo(board : PieceDescriptor[][]) : PieceDescriptor[][] {
+  appliedTo(board : Board ) : Board {
     let newBoard = board; 
-    newBoard[this.toPosition.getY()][this.toPosition.getX()] = this.piece;
-    newBoard[this.fromPosition.getY()][this.fromPosition.getX()] = null;
+    newBoard[this.toPosition.getY()]![this.toPosition.getX()] = this.piece;
+    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = null;
     return newBoard;
   }
 
@@ -106,7 +109,7 @@ export class Rotation implements Action {
       throw new Error("Invalid Rotation string");
     }
 
-    let fromPosition =  Position.fromString(match[1] + match[2]);
+    let fromPosition =  Position.fromString(match[1]! + match[2]!);
     let relativeRotation = match[3] as RelativeRotation;
     let newDirection = piece.getDirection().rotatedBy(relativeRotation);
     return new Rotation(fromPosition, newDirection, piece);
@@ -145,7 +148,7 @@ export class Rotation implements Action {
 
   appliedTo(board : PieceDescriptor[][]) : PieceDescriptor[][] {
     let newBoard = board; 
-    newBoard[this.fromPosition.getY()][this.fromPosition.getX()] = this.transformedPiece();
+    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.transformedPiece();
     return newBoard;
   }
 

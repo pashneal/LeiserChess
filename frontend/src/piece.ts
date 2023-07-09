@@ -6,7 +6,7 @@ import {PawnDirection, QueenDirection} from './spatialUtils';
 
 export class PieceDescriptor {
   private pieceType : PieceType;
-  private direction : Direction;
+  private direction : Direction | null;
   private pieceColor : PieceColor;
 
   constructor(pieceType : PieceType, color : PieceColor, direction : Direction | null ) {
@@ -31,22 +31,22 @@ export class PieceDescriptor {
   }
 
   rotateClockwise() : PieceDescriptor {
-    let newDirection  = this.direction.rotatedClockwise();
+    let newDirection  = this.direction!.rotatedClockwise();
     return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
   }
 
   rotateCounterClockwise() : PieceDescriptor {
-    let newDirection  = this.direction.rotatedCounterClockwise();
+    let newDirection  = this.direction!.rotatedCounterClockwise();
     return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
   }
 
   rotated180() : PieceDescriptor {
-    let newDirection  = this.direction.rotated180();
+    let newDirection  = this.direction!.rotated180();
     return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
   }
 
   static fromString(pieceString : string) : PieceDescriptor {
-    return fen(pieceString);
+    return fen(pieceString)!;
   }
 
   toString() : string {
@@ -54,7 +54,7 @@ export class PieceDescriptor {
     let direction : string;
     let composedString : string  = "";
 
-    switch(this.direction.toString()) {
+    switch(this.direction!.toString()) {
       case "north":
         direction = "N";
         break;
@@ -81,6 +81,7 @@ export class PieceDescriptor {
         break;
     }
 
+    direction = direction!;
     switch(this.pieceType) {
       case "queen":
         composedString += direction + direction;
