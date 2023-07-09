@@ -166,7 +166,6 @@ class MoveSelector {
     if (this.actionQueue === null) {
       throw new Error("Cannot commit queue when no action is queued");
     }
-
     this.game.applyAction(this.actionQueue!);
     this.dequeue();
     this.deselectSquare();
