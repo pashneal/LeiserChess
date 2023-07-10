@@ -74,6 +74,7 @@ export class Position  {
 
     return letterPart + numberPart;
   }
+
 }
 
 // Sanity checks for Position
@@ -84,9 +85,10 @@ console.assert(Position.fromString("b4").getY() === 3);
 export type RelativeRotation = "U" | "L" | "R";
 
 export class Direction { 
-  allowedDirections : Array<string> = [];
   direction : string = "";
+  allowedDirections : Array<string> = [];
   rotatedDirectionMap : Map<string, string> = new Map<string, string>();
+
   copy() : this {
     throw new Error("Cannot copy a Direction, did you mean to create a subclass?");
   }
@@ -149,6 +151,33 @@ export class Direction {
     if (other === null) { return  false; }
     return this.direction === other.direction;
   }
+
+  decompose() : [Direction, Direction] {
+    throw new Error("Cannot decompose this direction into new directions");
+  }
+
+  appliedTo( position : Position ) : Position {
+    switch ( this.direction ) {
+      case "north-east":
+        return new Position( position.getX() + 1, position.getY() - 1);
+      case "north-west":
+        return new Position( position.getX() - 1, position.getY() + 1);
+      case "south-east":
+        return new Position( position.getX() + 1, position.getY() + 1);
+      case "south-west":
+        return new Position( position.getX() - 1, position.getY() - 1);
+      case "north":
+        return new Position( position.getX(), position.getY() - 1);
+      case "south":
+        return new Position( position.getX(), position.getY() + 1);
+      case "east":
+        return new Position( position.getX() + 1, position.getY());
+      case "west":
+        return new Position( position.getX() - 1, position.getY());
+    }
+
+    throw new Error("Invalid direction");
+  }
 }
 
 export class QueenDirection extends Direction {
@@ -190,6 +219,19 @@ export class PawnDirection extends Direction {
       throw new Error("Invalid Direction for this type: " + direction +
                      "Allowed directions: " + this.allowedDirections.join(", "));
     }
+  }
+  override decompose() : [Direction, Direction] {
+    switch (this.direction) {
+      case "north-east":
+        return [new QueenDirection("north"), new QueenDirection("east")]
+      case "north-west":
+        return [new QueenDirection("north"), new QueenDirection("west")]
+      case "south-west":
+        return [new QueenDirection("south"), new QueenDirection("west")]
+      case "south-east":
+        return [new QueenDirection("south"), new QueenDirection("east")]
+    };
+    throw new Error("Something bizzare happened -  direction not found");
   }
 }
 

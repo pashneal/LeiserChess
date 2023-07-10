@@ -1,9 +1,9 @@
 import { PieceDescriptor} from './piece';
 import type { RelativeRotation } from './spatialUtils';
 import { Direction , Position} from './spatialUtils';
+import type { Board } from './board';
 
 
-type Board  = Array<Array<PieceDescriptor | null>>;
 
 
 export interface Action {
@@ -224,11 +224,11 @@ export class Zap implements Action {
   }
 
   toString() : string {
-    throw new Error("Zaps have no standard representation as a FEN string");
+    throw new Error("Zaps have no standard representation as a FEN string yet");
   }
 
-  static fromString(actionString : string, sourcePiece : PieceDescriptor, targetPiece: PieceDescriptor) : Swap {
-    throw new Error("Zaps have no standard representation as a FEN string");
+  static fromString() : Swap {
+    throw new Error("Zaps have no standard representation as a FEN string yet");
   }
 
   isValid() : boolean {
@@ -237,8 +237,29 @@ export class Zap implements Action {
 
   appliedTo(board : Board ) : Board {
     let newBoard = board; 
-    newBoard[this.toPosition.getY()]![this.toPosition.getX()] = this.sourcePiece;
-    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.targetPiece;
+    let travelingDirection : Direction | null = this.piece.getDirection();
+    let currentPosition = travelingDirection.appliedTo(this.initialPosition);
+
+    // Travel and reflect off pieces until we hit a piece or the edge of the board
+    while ( currentPosition.isWithinBounds() && travelingDirection !== null) {
+      let [x, y] = currentPosition.toArray();
+      let piece = newBoard[x]![y];
+
+      if (piece !== null) {
+        piece = piece!;
+        travelingDirection = piece.reflect(travelingDirection);
+        if (travelingDirection === null) { break; }
+      }
+
+      currentPosition = travelingDirection.appliedTo(currentPosition);
+    }
+
+    // If we hit a piece, destroy it
+    if (currentPosition.isWithinBounds()) {
+      let [x,y] = currentPosition.toArray();
+      newBoard[x]![y] = null;
+    }
+
     return newBoard;
   }
 }

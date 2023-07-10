@@ -185,6 +185,29 @@ export class PieceDescriptor {
       new QueenDirection("west")
     );
   }
+
+  // Based on piece and current orientation, 
+  // choose how to reflect an incoming laser
+  // return null if laser cannot be reflected
+  reflect(incoming : Direction) : Direction | null {
+    if (this.getPieceType() === "queen") {
+      // Queens can't reflect incoming lasers
+      return null;
+    }
+
+    // Pawns can reflect lasers if they bounce of the mirror face
+    // The laser must be incoming opposite to one of the faceDirections
+    let direction = this.getDirection();
+    let faceDirections = direction.decompose();
+    let matchingDirection  = faceDirections.find( 
+          (direction) => direction.equals(incoming.rotated180()) 
+    );
+    if (matchingDirection === undefined) { return null; }
+
+    // Get the other value from the decomposition, that is the laser's new direction
+    let reflection = faceDirections.find( (value) => !value.equals(matchingDirection!))!
+    return reflection;
+  }
 }
 
 
