@@ -32,12 +32,24 @@ export class GameState {
     this.board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
   }
 
+  copy () : GameState{ 
+    let game =new GameState();
+    game.history = this.history.slice();
+    game.board = this.toArray();
+    game.currentPlayer = this.currentPlayer
+    return game;
+  }
+
+  getCurrentPlayer() : Player {
+    return this.currentPlayer
+  }
+
   static fromFEN(fenString : string) {
      let gameState = new GameState();
      let [board, player] = parseBoard(fenString);
      gameState.board = board;
      gameState.currentPlayer = player;
-     gameState.history = [gameState.toFEN()];
+     gameState.history = [gameState.toShortFEN()];
 
      return gameState;
   }
@@ -71,6 +83,10 @@ export class GameState {
     let currentPlayer = this.currentPlayer === "light" ? "W" : "B";
     // Remove the last extra slash, append the player
     return fenString.slice(0, -1) + " " + currentPlayer;
+  }
+
+  toShortFEN() : string {
+    return this.toFEN().slice(0,-2);
   }
 
   getPiece(position : Position) : PieceDescriptor | null {
@@ -115,11 +131,22 @@ export class GameState {
 
     let fireLaser = new Zap(queenPosition!, queen!);
     this.board = fireLaser.appliedTo(this.toArray());
+
   }
 
+  isLegalAction(action : Action) : boolean {
+    try {
+      let game = this.copy();
+      // Only legal actions can be done in a game
+      // Should error if the action is illegal for a given piece
+      game.applyAction(action);
+    } catch {
+      return false;
+    }
+    return true;
+  }
 
-
-  // Apply an action on the board
+  // Apply an action on the board, throws error if action is illegal
   //
   // Justification: as we expect that the type of action will change 
   // from a version of the game to another, we want to keep the
@@ -128,25 +155,22 @@ export class GameState {
   //
   // @param action the action to apply
   applyAction(action : Action) {
+    if  (!action.isValid()) { 
+      throw new Error("The selected action is not valid " +  JSON.stringify(action));
+    }
+      
     // Transform the board according to the action
     let board = action.appliedTo(this.toArray());
-    console.log("Action applied", action.toString())
     this.board = board;
     this.fireLaser(this.currentPlayer);
 
     // None of the previous 2 states can be the same as the current state
-    if (this.history.slice(-2).some((state) => state === this.toFEN())) {
+    if (this.history.slice(-2).some((state) => state === this.toShortFEN())) {
       throw new Error("None of the previous 2 states can be the same as the current state");
     }
 
-    this.history.push(this.toFEN());
+    this.history.push(this.toShortFEN());
     this.currentPlayer = this.currentPlayer === "light" ? "dark" : "light";
-  }
-
-  copy() : GameState {
-    let board = GameState.fromFEN(this.toFEN());
-    board.history = this.history.slice();
-    return board;
   }
 } 
 
@@ -201,11 +225,19 @@ class MoveSelector {
   }
 
   selectSquare(position : Position) {
+
     if (this.selectedSquare != null) {
       throw new Error("Cannot select a square when one is already selected");
     }
     this.selectedSquare = position;
     this.selectedPiece = this.game.getPiece(position);
+    // Only allow pieces to be selected that match the color
+    if (this.selectedPiece !== null) {
+      if (this.selectedPiece.getPieceColor() as Player !== this.game.getCurrentPlayer()){
+        this.selectedPiece = null;
+        this.selectedSquare = null;
+      }
+    }
   }
 
   deselectSquare() {
@@ -233,7 +265,6 @@ class MoveSelector {
     let actions = generateActions(this.game, this.selectedSquare);
     return actions;
 
-    // TODO: Filter out actions that don't change state of board after zap
   }
 
   getPiece(position : Position) : PieceDescriptor | null {

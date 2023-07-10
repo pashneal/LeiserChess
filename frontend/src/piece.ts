@@ -202,7 +202,7 @@ export class PieceDescriptor {
     let matchingDirection  = faceDirections.find( 
           (direction) => direction.equals(incoming.rotated180()) 
     );
-    if (matchingDirection === undefined) { return null; }
+    if (!matchingDirection) { return null; }
 
     // Get the other value from the decomposition, that is the laser's new direction
     let reflection = faceDirections.find( (value) => !value.equals(matchingDirection!))!

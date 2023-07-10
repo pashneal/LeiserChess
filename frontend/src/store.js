@@ -21,6 +21,7 @@ export let boardState = derived(
 export function interactWithSquare(row, col) {
   let x = col;
   let y = row;
+  console.log("interacting with square " + x + " " + y)
   highlighter.update((value) => {
     value.interactWithSquare(new Position(x,y)) ; 
     return value

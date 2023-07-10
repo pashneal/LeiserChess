@@ -1,7 +1,7 @@
 import { PieceDescriptor} from './piece';
 import type { RelativeRotation } from './spatialUtils';
 import { Direction , Position} from './spatialUtils';
-import type { Board } from './board';
+import type { Board , Player} from './board';
 
 export interface Action {
   /*
@@ -35,6 +35,12 @@ export interface Action {
    * @return the board after the action is applied
    */
   appliedTo(board : Board) : Board
+
+  /* 
+   * @param player the player to check
+   * @return true if the player matches the one moved by this action
+   */
+  matchPlayer( player : Player) : boolean  
 }
 
 // Represents the move action, that is, moving a piece from one position to another
@@ -87,6 +93,9 @@ export class Move implements Action {
     newBoard[this.toPosition.getY()]![this.toPosition.getX()] = this.piece;
     newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = null;
     return newBoard;
+  }
+  matchPlayer(player : Player): boolean{
+    return this.piece.getPieceColor() as Player == player;
   }
 }
 
@@ -144,6 +153,9 @@ export class Rotation implements Action {
     newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.transformedPiece();
     return newBoard;
   }
+  matchPlayer(player : Player): boolean{
+    return this.piece.getPieceColor() as Player == player;
+  }
 }
 
 // Represents the swap action, that is, moving a piece from one position to another, but 
@@ -198,6 +210,10 @@ export class Swap implements Action {
     newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.targetPiece;
     return newBoard;
   }
+
+  matchPlayer(player : Player): boolean{
+    return this.sourcePiece.getPieceColor() as Player == player;
+  }
 }
 
 // Represents the zap action, that is, from a given position and piece 
@@ -240,8 +256,9 @@ export class Zap implements Action {
 
     // Travel and reflect off pieces until we hit a piece or the edge of the board
     while ( currentPosition.isWithinBounds() && travelingDirection !== null) {
+
       let [x, y] = currentPosition.toArray();
-      let piece = newBoard[x]![y];
+      let piece = newBoard[y]![x];
 
       // If we hit a piece, reflect off it
       // If there is no reflection, we are done
@@ -250,16 +267,19 @@ export class Zap implements Action {
         if (reflection === null) { break; }
         travelingDirection = reflection;
       }
-
       currentPosition = travelingDirection.appliedTo(currentPosition);
     }
 
     // If the laser stopped at a piece, remove it
     if (currentPosition.isWithinBounds()) {
       let [x,y] = currentPosition.toArray();
-      newBoard[x]![y] = null;
+      newBoard[y]![x] = null;
     }
 
     return newBoard;
+  }
+
+  matchPlayer(player : Player): boolean{
+    return this.piece.getPieceColor() as Player == player;
   }
 }

@@ -14,7 +14,8 @@ export function generateActions( game : GameState, position : Position) : Array<
   actions = actions.concat(moves);
   actions = actions.concat(swaps);
 
-  actions.filter((action) => action.isValid());
+  // All actions lead to legal game states
+  actions = actions.filter((action) => game.isLegalAction(action))  
 
   return actions;
 }
@@ -41,7 +42,7 @@ function generateSwaps(game : GameState, sourcePosition : Position) : Array<Acti
   let hasTargetPiece = bounded.filter((pos) => game.getPiece(pos) !== null);
 
   let targetPieces: Array<[Position, PieceDescriptor]> = [];
-  targetPieces = hasTargetPiece.map((pos) => [pos, game.getPiece(sourcePosition)!]);
+  targetPieces = hasTargetPiece.map((pos) => [pos, game.getPiece(pos)!]);
   let swaps = targetPieces.map(([targetPosition, targetPiece]) => new Swap(
         sourcePosition, 
         targetPosition, 
