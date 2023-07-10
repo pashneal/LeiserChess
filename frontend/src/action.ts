@@ -3,9 +3,6 @@ import type { RelativeRotation } from './spatialUtils';
 import { Direction , Position} from './spatialUtils';
 import type { Board } from './board';
 
-
-
-
 export interface Action {
   /*
    * Returns a new piece descriptor that is the result of applying the action on an input piece

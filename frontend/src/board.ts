@@ -4,8 +4,7 @@ import { generateActions } from "./actionGenerator";
 import { BOARD_SIZE } from './constants';
 import type { Direction} from "./spatialUtils";
 import { Position } from "./spatialUtils";
-import type { Action } from "./action";
-import { Rotation} from "./action";
+import { Rotation, Zap, Action} from "./action";
 
 export type Player = "light" | "dark";
 export type Board  = Array<Array<PieceDescriptor | null>>;
@@ -72,7 +71,6 @@ export class GameState {
     let currentPlayer = this.currentPlayer === "light" ? "W" : "B";
     // Remove the last extra slash, append the player
     return fenString.slice(0, -1) + " " + currentPlayer;
-
   }
 
   getPiece(position : Position) : PieceDescriptor | null {
@@ -91,21 +89,50 @@ export class GameState {
   }
 
 
+  // Fires the laser for a given player
+  fireLaser(player : Player) {
+    let queenPosition : Position | null = null;
+    let queen : PieceDescriptor | null = null;
+
+    // Find the PieceDescriptor matching "queen" and color, and it's position
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      for (let x = 0; x < BOARD_SIZE; x++) {
+        let piece = this.getPiece(new Position(x, y));
+        if (piece !== null 
+            && piece.getPieceType() === "queen" 
+            && piece.getPieceColor() as Player === player) 
+        {
+          queenPosition = new Position(x, y);
+          queen = piece;
+          break;
+        }
+      }
+    }
+
+    if (queen === null) {
+      throw new Error("No queen found for the current color, can't fire laser");
+    }
+
+    let fireLaser = new Zap(queenPosition!, queen!);
+    this.board = fireLaser.appliedTo(this.toArray());
+  }
+
+
 
   // Apply an action on the board
   //
   // Justification: as we expect that the type of action will change 
   // from a version of the game to another, we want to keep the
   // implementation of the actions (moves, rotation, swaps etc) 
-  // logic outside of the GameState class
+  // logic decoupled from the GameState class
   //
   // @param action the action to apply
   applyAction(action : Action) {
-
     // Transform the board according to the action
     let board = action.appliedTo(this.toArray());
     console.log("Action applied", action.toString())
     this.board = board;
+    this.fireLaser(this.currentPlayer);
 
     // None of the previous 2 states can be the same as the current state
     if (this.history.slice(-2).some((state) => state === this.toFEN())) {
@@ -167,7 +194,8 @@ class MoveSelector {
     if (this.actionQueue === null) {
       throw new Error("Cannot commit queue when no action is queued");
     }
-    this.game.applyAction(this.actionQueue!);
+    this.game.applyAction(this.actionQueue);
+    console.log(this.game);
     this.dequeue();
     this.deselectSquare();
   }
@@ -355,10 +383,9 @@ export class Highlighter {
     this.moveSelector.deselectSquare();
   }
 
-  commit() : GameState {
+  commit() {
     this.moveSelector.commitQueue();
     this.updateHighlightedSquares();
-    return this.getBoard();
   }
 
   getBoard() : GameState {

@@ -27,3 +27,9 @@ export function interactWithSquare(row, col) {
   })
 }
 
+export function commitState() {
+  highlighter.update((value) => {
+    value.commit() ; 
+    return value
+  })
+}
