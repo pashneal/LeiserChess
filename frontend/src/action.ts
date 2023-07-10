@@ -94,6 +94,7 @@ export class Move implements Action {
 }
 
 
+// Represents the rotation action, that is, rotating a piece in place
 export class Rotation implements Action {
   constructor(private fromPosition: Position, private newDirection : Direction, private piece : PieceDescriptor) {}
 
@@ -203,7 +204,7 @@ export class Swap implements Action {
 }
 
 // Represents the zap action, that is, from a given position and piece 
-// the laser moves in a straight line until it hits/reflects off another piece or
+// the laser keeps moves in a straight line until it hits/reflects off another piece or
 // hits the board edge
 export class Zap implements Action {
   constructor(
@@ -245,16 +246,18 @@ export class Zap implements Action {
       let [x, y] = currentPosition.toArray();
       let piece = newBoard[x]![y];
 
+      // If we hit a piece, reflect off it
+      // If there is no reflection, we are done
       if (piece !== null) {
-        piece = piece!;
-        travelingDirection = piece.reflect(travelingDirection);
-        if (travelingDirection === null) { break; }
+        let reflection = piece!.reflect(travelingDirection);
+        if (reflection === null) { break; }
+        travelingDirection = reflection;
       }
 
       currentPosition = travelingDirection.appliedTo(currentPosition);
     }
 
-    // If we hit a piece, destroy it
+    // If the laser stopped at a piece, remove it
     if (currentPosition.isWithinBounds()) {
       let [x,y] = currentPosition.toArray();
       newBoard[x]![y] = null;
