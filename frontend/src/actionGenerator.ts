@@ -20,12 +20,8 @@ export function generateActions( game : GameState, position : Position) : Array<
   return actions;
 }
 
-function generateSwaps(game : GameState, sourcePosition : Position) : Array<Action> {
-  let piece = game.getPiece(sourcePosition);
-  if (piece === null) { return []; }
-
-  let [x,y] = [sourcePosition.getX(), sourcePosition.getY()];
-
+function getAdjacentPositions(position : Position) : Array<Position> {
+  let [x,y] = [position.getX(), position.getY()];
   let deltas : Array<[number, number]> = [
     [1, 0],
     [-1, 0],
@@ -39,7 +35,17 @@ function generateSwaps(game : GameState, sourcePosition : Position) : Array<Acti
 
   let adjacent = deltas.map(([dx, dy]) => new Position(dx + x, dy + y));
   let bounded = adjacent.filter((a) => a.isWithinBounds());
-  let hasTargetPiece = bounded.filter((pos) => game.getPiece(pos) !== null);
+  return bounded;
+}
+
+
+function generateSwaps(game : GameState, sourcePosition : Position) : Array<Action> {
+  let piece = game.getPiece(sourcePosition);
+  if (piece === null) { return []; }
+
+
+  let adjacent = getAdjacentPositions(sourcePosition);
+  let hasTargetPiece = adjacent.filter((pos) => game.getPiece(pos) !== null);
 
   let targetPieces: Array<[Position, PieceDescriptor]> = [];
   targetPieces = hasTargetPiece.map((pos) => [pos, game.getPiece(pos)!]);
@@ -59,21 +65,8 @@ function generateMoves(game : GameState, position : Position) : Array<Action> {
     return moves;
   }
 
-  // Assume that this piece can move without restriction
-  let [x,y] = [position.getX(), position.getY()];
-  let deltas : Array<[number, number]> = [
-    [1, 0],
-    [-1, 0],
-    [0, 1],
-    [0, -1],
-    [1, 1],
-    [-1, -1],
-    [1, -1],
-    [-1, 1]
-  ];
-  let adjacent = deltas.map(([dx, dy]) => new Position(dx + x, dy + y)); 
-  let bounded = adjacent.filter((a) => a.isWithinBounds());
-  let targetSquareEmpty = bounded.filter((pos) => game.getPiece(pos) === null);
+  let adjacent = getAdjacentPositions(position);
+  let targetSquareEmpty = adjacent.filter((pos) => game.getPiece(pos) === null);
   let movesToEmpty = targetSquareEmpty.map((pos) => new Move(position, pos, piece!));
   moves = movesToEmpty;
 
