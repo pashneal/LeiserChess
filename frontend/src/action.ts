@@ -32,7 +32,7 @@ export interface Action {
 
   /*
    * @param the board that the action is being applied to
-   * @return the board after the action is applied
+   * @return mutate and return the board after the action is applied
    */
   appliedTo(board : Board) : Board
 

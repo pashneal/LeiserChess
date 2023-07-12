@@ -31,6 +31,7 @@ export function interactWithSquare(row, col) {
 export function commitState() {
   highlighter.update((value) => {
     value.commit() ; 
+    console.log(value.getBoard());
     return value
   })
 }

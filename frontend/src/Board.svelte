@@ -8,7 +8,7 @@
 </script>
 
 <div class="board">
-  {#each $boardState.toArray() as pieces, row}
+  {#each $boardState.board as pieces, row}
     {#each pieces as piece, col (piece.id())}
       <Cell 
         row={row} 

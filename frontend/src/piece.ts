@@ -13,11 +13,17 @@ export class PieceDescriptor {
   private direction : Direction | null;
   private pieceColor : PieceColor | null;
 
-  constructor(pieceType : PieceType | null, color : PieceColor | null, direction : Direction | null ) {
+  constructor(pieceType : PieceType | null, color : PieceColor | null, direction : Direction | null) {
     this.pieceType = pieceType;
     this.direction = direction;
     this.pieceColor = color;
     this.uid = uid++;
+  }
+
+  copy() : PieceDescriptor {
+    let piece = new PieceDescriptor(this.pieceType, this.pieceColor, this.direction);
+    piece.uid = this.uid;
+    return piece;
   }
 
   getDirection() : Direction {

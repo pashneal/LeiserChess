@@ -20,6 +20,7 @@ export type Board  = Array<Array<PieceDescriptor>>;
 //  4. The board is always in a state resulting from the application of 
 //     legal actions  after an initial input FEN
 //
+// I don't like that board is public, but its more performant this way
 export class GameState {
   private board : Board;
   private history : Array<String> 
@@ -100,8 +101,8 @@ export class GameState {
 
   // Returns a copy of the board state's internals
   toArray() : Board { 
-    let boardState = GameState.fromFEN(this.toFEN());
-    return boardState.board;
+    let board = this.board.map((row) => row.map((piece) => piece.copy()));
+    return board;
   }
 
 
@@ -160,8 +161,7 @@ export class GameState {
     }
       
     // Transform the board according to the action
-    let board = action.appliedTo(this.toArray());
-    this.board = board;
+    this.board = action.appliedTo(this.board);
     this.fireLaser(this.currentPlayer);
 
     // None of the previous 2 states can be the same as the current state
