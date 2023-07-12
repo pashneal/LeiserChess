@@ -9,7 +9,7 @@
 
 <div class="board">
   {#each $boardState.toArray() as pieces, row}
-    {#each pieces as piece, col ((piece || "").toString() + row + col)}
+    {#each pieces as piece, col (piece.id())}
       <Cell 
         row={row} 
         col={col} 

@@ -56,7 +56,7 @@ export function parseCurrentPlayer(input : string) : [null | string, string]{
 
 export function parseBoard(input : string) : [Board, Player]{
 
-  let board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+  let board = Array.from({length: BOARD_SIZE}, () => Array.from({length: BOARD_SIZE}, () => PieceDescriptor.empty()));
   let row = 0;
   let col = 0;
   let currentPlayer;

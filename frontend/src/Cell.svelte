@@ -1,6 +1,5 @@
 <!-- Create a square -->
 <script>
-  import Piece from "./Piece.svelte";
 
   export let row = 0;
   export let col = 0;

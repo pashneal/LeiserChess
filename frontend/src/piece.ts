@@ -3,46 +3,65 @@ export type PieceColor = "light" | "dark";
 import type { Position , Direction } from './spatialUtils';
 import {PawnDirection, QueenDirection} from './spatialUtils';
 
+var uid = 0;
 
+// TODO: this could very much have stronger typing by disallow nulls
+// could be an interface
 export class PieceDescriptor {
-  private pieceType : PieceType;
+  private uid : number;
+  private pieceType : PieceType | null;
   private direction : Direction | null;
-  private pieceColor : PieceColor;
+  private pieceColor : PieceColor | null;
 
-  constructor(pieceType : PieceType, color : PieceColor, direction : Direction | null ) {
+  constructor(pieceType : PieceType | null, color : PieceColor | null, direction : Direction | null ) {
     this.pieceType = pieceType;
     this.direction = direction;
     this.pieceColor = color;
+    this.uid = uid++;
   }
 
   getDirection() : Direction {
     if (this.direction === null) {
       throw new Error("Cannot get direction of a piece that doesn't have a direction");
     }
+
     return this.direction;
   }
 
   getPieceType() : PieceType {
+    if (this.pieceType === null) {
+      throw new Error("Cannot get piece type of a piece that doesn't have a piece type");
+    }
     return this.pieceType;
   }
 
   getPieceColor() : PieceColor {
-    return this.pieceColor;
+    if (this.pieceColor === null) {
+      throw new Error("Cannot get piece color of a piece that doesn't have a piece color");
+    }
+
+    return this.pieceColor!;
   }
 
   rotateClockwise() : PieceDescriptor {
     let newDirection  = this.direction!.rotatedClockwise();
-    return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
+    let piece = new PieceDescriptor(this.pieceType!, this.pieceColor!, newDirection);
+    piece.uid = this.uid;
+    return piece;
   }
 
   rotateCounterClockwise() : PieceDescriptor {
     let newDirection  = this.direction!.rotatedCounterClockwise();
-    return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
+    let piece = new PieceDescriptor(this.pieceType!, this.pieceColor!, newDirection);
+    piece.uid = this.uid;
+    return piece;
   }
 
   rotated180() : PieceDescriptor {
     let newDirection  = this.direction!.rotated180();
-    return new PieceDescriptor(this.pieceType, this.pieceColor, newDirection);
+    let piece = new PieceDescriptor(this.pieceType!, this.pieceColor!, newDirection);
+    piece.uid = this.uid;
+    return piece;
   }
 
   static fromString(pieceString : string) : PieceDescriptor {
@@ -50,6 +69,9 @@ export class PieceDescriptor {
   }
 
   toString() : string {
+    if (this.isEmpty()) {
+      throw new Error("Cannot get string representation of an empty piece");
+    }
     let lowercase = this.pieceColor === "dark";
     let direction : string;
     let composedString : string  = "";
@@ -100,11 +122,11 @@ export class PieceDescriptor {
 
 
   pawn() : PieceDescriptor {
-    return new PieceDescriptor("pawn", this.pieceColor, this.direction);
+    return new PieceDescriptor("pawn", this.pieceColor!, this.direction);
   }
 
   queen() : PieceDescriptor {
-    return new PieceDescriptor("queen", this.pieceColor, this.direction);
+    return new PieceDescriptor("queen", this.pieceColor!, this.direction);
   }
 
   static light() : PieceDescriptor {
@@ -118,8 +140,8 @@ export class PieceDescriptor {
   nw() : PieceDescriptor {
     //assert(this.pieceType === "pawn");
     return new PieceDescriptor(
-      this.pieceType, 
-      this.pieceColor, 
+      this.pieceType!, 
+      this.pieceColor!, 
       new PawnDirection("north-west")
     );
   }
@@ -127,8 +149,8 @@ export class PieceDescriptor {
   sw() : PieceDescriptor {
     //assert(this.pieceType === "pawn");
     return new PieceDescriptor(
-      this.pieceType, 
-      this.pieceColor, 
+      this.pieceType!, 
+      this.pieceColor!, 
       new PawnDirection("south-west")
     );
   }
@@ -136,16 +158,16 @@ export class PieceDescriptor {
   ne() : PieceDescriptor {
     //assert(this.pieceType === "pawn");
     return new PieceDescriptor(
-      this.pieceType, 
-      this.pieceColor, 
+      this.pieceType!, 
+      this.pieceColor!, 
       new PawnDirection("north-east")
     );
   }
 
   se() : PieceDescriptor {
     return new PieceDescriptor(
-      this.pieceType,
-      this.pieceColor,
+      this.pieceType!,
+      this.pieceColor!,
       new PawnDirection("south-east")
     );
   }
@@ -153,8 +175,8 @@ export class PieceDescriptor {
   north() : PieceDescriptor {
     //assert(this.pieceType === "queen");
     return new PieceDescriptor(
-      this.pieceType,
-      this.pieceColor,
+      this.pieceType!,
+      this.pieceColor!,
       new QueenDirection("north")
     );
   }
@@ -162,8 +184,8 @@ export class PieceDescriptor {
   south() : PieceDescriptor {
     //assert(this.pieceType === "queen");
     return new PieceDescriptor(
-      this.pieceType, 
-      this.pieceColor, 
+      this.pieceType!, 
+      this.pieceColor!, 
       new QueenDirection("south")
     );
   }
@@ -171,8 +193,8 @@ export class PieceDescriptor {
   east() : PieceDescriptor {
     //assert(this.pieceType === "queen");
     return new PieceDescriptor(
-      this.pieceType,
-      this.pieceColor,
+      this.pieceType!,
+      this.pieceColor!,
       new QueenDirection("east")
     );
   }
@@ -180,16 +202,34 @@ export class PieceDescriptor {
   west() : PieceDescriptor {
     //assert(this.pieceType === "queen");
     return new PieceDescriptor(
-      this.pieceType,
-      this.pieceColor,
+      this.pieceType!,
+      this.pieceColor!,
       new QueenDirection("west")
     );
+  }
+
+  static empty() : PieceDescriptor {
+    return new PieceDescriptor(
+      null,
+      null,
+      null
+    )
+
+  }
+
+  isEmpty() : boolean {
+    return this.pieceType === null;
   }
 
   // Based on piece and current orientation, 
   // choose how to reflect an incoming laser
   // return null if laser cannot be reflected
   reflect(incoming : Direction) : Direction | null {
+    // If the piece is empty, this passes through
+    if (this.isEmpty()) {
+      return incoming 
+    }
+
     if (this.getPieceType() === "queen") {
       // Queens can't reflect incoming lasers
       return null;
@@ -207,6 +247,10 @@ export class PieceDescriptor {
     // Get the other value from the decomposition, that is the laser's new direction
     let reflection = faceDirections.find( (value) => !value.equals(matchingDirection!))!
     return reflection;
+  }
+
+  id() : number {
+    return this.uid;
   }
 }
 

@@ -41,11 +41,11 @@ function getAdjacentPositions(position : Position) : Array<Position> {
 
 function generateSwaps(game : GameState, sourcePosition : Position) : Array<Action> {
   let piece = game.getPiece(sourcePosition);
-  if (piece === null) { return []; }
+  if (piece.isEmpty()) { return []; }
 
 
   let adjacent = getAdjacentPositions(sourcePosition);
-  let hasTargetPiece = adjacent.filter((pos) => game.getPiece(pos) !== null);
+  let hasTargetPiece = adjacent.filter((pos) => !game.getPiece(pos).isEmpty() );
 
   let targetPieces: Array<[Position, PieceDescriptor]> = [];
   targetPieces = hasTargetPiece.map((pos) => [pos, game.getPiece(pos)!]);
@@ -61,12 +61,12 @@ function generateSwaps(game : GameState, sourcePosition : Position) : Array<Acti
 function generateMoves(game : GameState, position : Position) : Array<Action> { 
   let moves : Array<Action> = []; 
   let piece = game.getPiece(position);
-  if (piece === null) {
+  if (piece.isEmpty()) {
     return moves;
   }
 
   let adjacent = getAdjacentPositions(position);
-  let targetSquareEmpty = adjacent.filter((pos) => game.getPiece(pos) === null);
+  let targetSquareEmpty = adjacent.filter((pos) => game.getPiece(pos).isEmpty() );
   let movesToEmpty = targetSquareEmpty.map((pos) => new Move(position, pos, piece!));
   moves = movesToEmpty;
 
@@ -75,7 +75,7 @@ function generateMoves(game : GameState, position : Position) : Array<Action> {
 
 function generateRotations(game : GameState, position : Position) : Array<Action>{
   let piece = game.getPiece(position);
-  if (piece === null) { return []; }
+  if (piece.isEmpty()) { return []; }
 
   let directions =  [
     piece.rotateClockwise().getDirection(),

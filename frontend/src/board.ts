@@ -1,4 +1,4 @@
-import type { PieceDescriptor } from "./piece";
+import { PieceDescriptor } from "./piece";
 import { parseBoard } from "./parser";
 import { generateActions } from "./actionGenerator";
 import { BOARD_SIZE } from './constants';
@@ -7,7 +7,7 @@ import { Position } from "./spatialUtils";
 import { Rotation, Zap, Action} from "./action";
 
 export type Player = "light" | "dark";
-export type Board  = Array<Array<PieceDescriptor | null>>;
+export type Board  = Array<Array<PieceDescriptor>>;
 
 
 // GameState is a class that represents the state of the LeiserChess game
@@ -28,15 +28,15 @@ export class GameState {
   private constructor() {
     this.currentPlayer = "light";
     this.history = [];
-    // Fill 2D array with null
-    this.board = Array(BOARD_SIZE).fill(null).map(() => Array(BOARD_SIZE).fill(null));
+    // Fill 2D array with PieceDescriptor.empty
+    this.board = Array.from({length: BOARD_SIZE}, () => Array.from({length: BOARD_SIZE}, () => PieceDescriptor.empty()));
   }
 
   copy () : GameState{ 
     let game =new GameState();
     game.history = this.history.slice();
     game.board = this.toArray();
-    game.currentPlayer = this.currentPlayer
+    game.currentPlayer = this.currentPlayer;
     return game;
   }
 
@@ -61,7 +61,7 @@ export class GameState {
     for (let row of this.board) {
       for (let piece of row) {
 
-        if (piece === null) {
+        if (piece.isEmpty()) {
           runningBlanks++;
         } else {
           if (runningBlanks > 0) {
@@ -89,12 +89,12 @@ export class GameState {
     return this.toFEN().slice(0,-2);
   }
 
-  getPiece(position : Position) : PieceDescriptor | null {
+  getPiece(position : Position) : PieceDescriptor {
     let [x, y] = [position.getX(), position.getY()];
     return this.board[y]![x]!;
   }
 
-  private setPiece([x,y] : [number, number], piece : PieceDescriptor | null) {
+  private setPiece([x,y] : [number, number], piece : PieceDescriptor ) {
     this.board[y]![x] = piece;
   }
 
@@ -114,7 +114,7 @@ export class GameState {
     for (let y = 0; y < BOARD_SIZE; y++) {
       for (let x = 0; x < BOARD_SIZE; x++) {
         let piece = this.getPiece(new Position(x, y));
-        if (piece !== null 
+        if (!piece.isEmpty()
             && piece.getPieceType() === "queen" 
             && piece.getPieceColor() as Player === player) 
         {
@@ -231,8 +231,9 @@ class MoveSelector {
     }
     this.selectedSquare = position;
     this.selectedPiece = this.game.getPiece(position);
+
     // Only allow pieces to be selected that match the color
-    if (this.selectedPiece !== null) {
+    if (!this.selectedPiece.isEmpty()) {
       if (this.selectedPiece.getPieceColor() as Player !== this.game.getCurrentPlayer()){
         this.selectedPiece = null;
         this.selectedSquare = null;
@@ -267,7 +268,7 @@ class MoveSelector {
 
   }
 
-  getPiece(position : Position) : PieceDescriptor | null {
+  getPiece(position : Position) : PieceDescriptor {
     return this.game.getPiece(position);
   }
 
@@ -332,6 +333,7 @@ export class Highlighter {
   }
 
   interactWithSquare( newPosition : Position) {
+    // Do nothing if the square is empty
     let selectedSquare = this.moveSelector.getSelectedSquare();
 
     const actionActivated = (action : Action) => (

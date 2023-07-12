@@ -91,7 +91,7 @@ export class Move implements Action {
   appliedTo(board : Board ) : Board {
     let newBoard = board; 
     newBoard[this.toPosition.getY()]![this.toPosition.getX()] = this.piece;
-    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = null;
+    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = PieceDescriptor.empty();
     return newBoard;
   }
   matchPlayer(player : Player): boolean{
@@ -258,11 +258,11 @@ export class Zap implements Action {
     while ( currentPosition.isWithinBounds() && travelingDirection !== null) {
 
       let [x, y] = currentPosition.toArray();
-      let piece = newBoard[y]![x];
+      let piece = newBoard[y]![x]!;
 
       // If we hit a piece, reflect off it
       // If there is no reflection, we are done
-      if (piece !== null) {
+      if (piece.isEmpty()) {
         let reflection = piece!.reflect(travelingDirection);
         if (reflection === null) { break; }
         travelingDirection = reflection;
@@ -273,7 +273,7 @@ export class Zap implements Action {
     // If the laser stopped at a piece, remove it
     if (currentPosition.isWithinBounds()) {
       let [x,y] = currentPosition.toArray();
-      newBoard[y]![x] = null;
+      newBoard[y]![x] = PieceDescriptor.empty();
     }
 
     return newBoard;
