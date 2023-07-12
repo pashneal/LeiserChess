@@ -95,7 +95,7 @@ export class Move implements Action {
     return newBoard;
   }
   matchPlayer(player : Player): boolean{
-    return this.piece.getPieceColor() as Player == player;
+    return this.piece.getColor() as Player == player;
   }
 }
 
@@ -119,10 +119,11 @@ export class Rotation implements Action {
 
   transformedPiece() : PieceDescriptor {
     let piece = new PieceDescriptor(
-      this.piece.getPieceType(), 
-      this.piece.getPieceColor(), 
+      this.piece.getType(), 
+      this.piece.getColor(), 
       this.newDirection
     );
+    piece.setUid(this.piece.id());
     return piece;
   }
 
@@ -154,7 +155,7 @@ export class Rotation implements Action {
     return newBoard;
   }
   matchPlayer(player : Player): boolean{
-    return this.piece.getPieceColor() as Player == player;
+    return this.piece.getColor() as Player == player;
   }
 }
 
@@ -212,7 +213,7 @@ export class Swap implements Action {
   }
 
   matchPlayer(player : Player): boolean{
-    return this.sourcePiece.getPieceColor() as Player == player;
+    return this.sourcePiece.getColor() as Player == player;
   }
 }
 
@@ -280,6 +281,6 @@ export class Zap implements Action {
   }
 
   matchPlayer(player : Player): boolean{
-    return this.piece.getPieceColor() as Player == player;
+    return this.piece.getColor() as Player == player;
   }
 }

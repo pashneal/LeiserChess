@@ -116,8 +116,8 @@ export class GameState {
       for (let x = 0; x < BOARD_SIZE; x++) {
         let piece = this.getPiece(new Position(x, y));
         if (!piece.isEmpty()
-            && piece.getPieceType() === "queen" 
-            && piece.getPieceColor() as Player === player) 
+            && piece.getType() === "queen" 
+            && piece.getColor() as Player === player) 
         {
           queenPosition = new Position(x, y);
           queen = piece;
@@ -234,7 +234,7 @@ class MoveSelector {
 
     // Only allow pieces to be selected that match the color
     if (!this.selectedPiece.isEmpty()) {
-      if (this.selectedPiece.getPieceColor() as Player !== this.game.getCurrentPlayer()){
+      if (this.selectedPiece.getColor() as Player !== this.game.getCurrentPlayer()){
         this.selectedPiece = null;
         this.selectedSquare = null;
       }

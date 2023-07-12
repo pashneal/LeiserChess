@@ -20,6 +20,10 @@ export class PieceDescriptor {
     this.uid = uid++;
   }
 
+  setUid(uid : number) {
+    this.uid = uid;
+  }
+
   copy() : PieceDescriptor {
     let piece = new PieceDescriptor(this.pieceType, this.pieceColor, this.direction);
     piece.uid = this.uid;
@@ -34,14 +38,14 @@ export class PieceDescriptor {
     return this.direction;
   }
 
-  getPieceType() : PieceType {
+  getType() : PieceType {
     if (this.pieceType === null) {
       throw new Error("Cannot get piece type of a piece that doesn't have a piece type");
     }
     return this.pieceType;
   }
 
-  getPieceColor() : PieceColor {
+  getColor() : PieceColor {
     if (this.pieceColor === null) {
       throw new Error("Cannot get piece color of a piece that doesn't have a piece color");
     }
@@ -236,7 +240,7 @@ export class PieceDescriptor {
       return incoming 
     }
 
-    if (this.getPieceType() === "queen") {
+    if (this.getType() === "queen") {
       // Queens can't reflect incoming lasers
       return null;
     }
@@ -257,6 +261,10 @@ export class PieceDescriptor {
 
   id() : number {
     return this.uid;
+  }
+
+  uiIndex() : string {
+    return this.uid.toString() + (this.direction || "").toString();
   }
 }
 

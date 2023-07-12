@@ -1,11 +1,14 @@
 
 <script>
-  export let name;
-  export let color;
-  export let direction;
+  import { flip } from "svelte/animate";
+  import { fade } from "svelte/transition";
+  export let piece;
+  let name = (piece.isEmpty()) ? "": piece.getType() ;
+  let color = (piece.isEmpty()) ? "": piece.getColor() ;
+  let direction = (piece.isEmpty()) ? "": piece.getDirection() ;
 </script>
 
-<div class="{color} {name} {direction}"> 
+<div in:fade class="{color} {name} {direction}"> 
   {#if name === "queen"}
     ♕
   {:else if name === "pawn"}

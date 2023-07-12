@@ -1,5 +1,6 @@
 <script>
   // Declare a board size property
+  import { flip } from "svelte/animate";
   import Cell from "./Cell.svelte";
   import Piece from "./Piece.svelte";
   import { highlightSquares , boardState , interactWithSquare } from './store.js';
@@ -9,7 +10,7 @@
 
 <div class="board">
   {#each $boardState.board as pieces, row}
-    {#each pieces as piece, col (piece.id())}
+    {#each pieces as piece, col (piece.uiIndex())}
       <Cell 
         row={row} 
         col={col} 
@@ -18,9 +19,7 @@
         on:clicked={() => (interactWithSquare(row,col))}
       >
         <Piece 
-          name={(piece) ? piece.pieceType : ""} 
-          color={(piece) ? piece.pieceColor : ""} 
-          direction={(piece) ? piece.direction : ""}
+          piece={piece}
         />
       </Cell>
     {/each}
