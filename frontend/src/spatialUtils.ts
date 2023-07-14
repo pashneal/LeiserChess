@@ -21,6 +21,10 @@ export class Position  {
     return [this.x, this.y];
   }
 
+  getDifference(other : Position) : [number, number] {
+    return [this.x - other.x, this.y - other.y];
+  }
+
   equals(other : Position | null) : boolean {
     if  (other === null) { return false; }
     return this.x === other.x && this.y === other.y;

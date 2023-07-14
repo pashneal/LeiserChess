@@ -11,17 +11,17 @@
 <div class="board">
   {#each $boardState.board as pieces, row}
     {#each pieces as piece, col (piece.uiIndex())}
-      <Cell 
-        row={row} 
-        col={col} 
-        highlight={$highlightSquares[row][col]}
+        <Cell 
+          row={row} 
+          col={col} 
+          highlight={$highlightSquares[row][col]}
 
-        on:clicked={() => (interactWithSquare(row,col))}
-      >
-        <Piece 
-          piece={piece}
-        />
-      </Cell>
+          on:clicked={() => (interactWithSquare(row,col))}
+        >
+          <Piece 
+            piece={piece}
+          />
+        </Cell>
     {/each}
   {/each}
 </div>

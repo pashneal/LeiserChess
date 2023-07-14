@@ -2,27 +2,49 @@
 <script>
   import { flip } from "svelte/animate";
   import { fade } from "svelte/transition";
+  import { quintOut } from "svelte/easing";
+  import { transition } from "./store.js";
   export let piece;
+
+
+  let transitionFunction = $transition.ofPiece(piece);
+  let cssFunction = (t) => transitionFunction( quintOut(t) );
+
+
   let name = (piece.isEmpty()) ? "": piece.getType() ;
   let color = (piece.isEmpty()) ? "": piece.getColor() ;
   let direction = (piece.isEmpty()) ? "": piece.getDirection() ;
+
+
+  function moveIn( node, { duration = 400, cssFunc = moveEast} ){
+    const style = getComputedStyle(node);
+
+    return {
+      duration,
+      css : cssFunc,
+    }; 
+  }
+
 </script>
 
-<div in:fade class="{color} {name} {direction}"> 
+
+<div in:moveIn={{duration : 400, cssFunc : cssFunction}} class="{color} {name}"> 
   {#if name === "queen"}
+    <div direction={direction}>
     ♕
+    </div>
   {:else if name === "pawn"}
-    <svg viewBox="0 0 100 100" >
+    <svg viewBox="0 0 100 100" direction={direction}> 
         <polygon class="polygon-shape" points="25,25 75,75 75,25" />
     </svg>
   {/if}
-
 </div>
 
 <style>
 
   div {
     box-sizing: border-box;
+    position: relative;
     width: 100%;
     height: 100%;
     font-size: 40px;
@@ -41,47 +63,49 @@
     fill: blue;
   }
 
-  svg {
-    box-sizing: border-box;
-    height: 100%;
-    width: 100%;
-  }
   
   .polygon-shape {
     width: 100%;
     height: 100%;
   }
 
-  .north-east {
+  [direction=north-east] {
     transform: rotate(180deg);
   }
 
-  .north-west {
+  [direction=north-west] {
     transform: rotate(90deg);
   }
 
-  .south-east {
-    transform: rotate(270deg); }
+  [direction=south-east] {
+    transform: rotate(270deg); 
+  }
 
-  .south-west {
+  [direction=south-west] {
     transform: rotate(0deg);
   }
 
-  .east {
+  [direction=east] {
     transform: rotate(90deg);
   }
 
-  .west {
+  [direction=west] {
     transform: rotate(-90deg);
   }
 
-  .south {
+  [direction=south] {
     transform: rotate(-180deg);
   }
 
-  .north {
+  [direction=north] {
     transform: rotate(0deg);
   }
   
+  svg {
+    box-sizing: border-box;
+    height: 100%;
+    width: 100%;
+  }
+
 </style>
 

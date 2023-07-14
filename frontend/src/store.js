@@ -18,12 +18,17 @@ export let boardState = derived(
   ($highlighter) => $highlighter.getBoard() 
 );
 
+export let transition = derived(
+  highlighter, 
+  ($highlighter) => $highlighter.getTransition()
+);
+
 export function interactWithSquare(row, col) {
   let x = col;
   let y = row;
   console.log("interacting with square " + x + " " + y)
   highlighter.update((value) => {
-    value.interactWithSquare(new Position(x,y)) ; 
+    value.interactWithSquare(new Position(x,y)); 
     return value
   })
 }

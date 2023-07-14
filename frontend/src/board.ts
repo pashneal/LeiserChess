@@ -5,6 +5,7 @@ import { BOARD_SIZE } from './constants';
 import type { Direction} from "./spatialUtils";
 import { Position } from "./spatialUtils";
 import { Rotation, Zap, Action} from "./action";
+import {Transition} from "./transition";
 
 export type Player = "light" | "dark";
 export type Board  = Array<Array<PieceDescriptor>>;
@@ -172,6 +173,7 @@ export class GameState {
     this.history.push(this.toShortFEN());
     this.currentPlayer = this.currentPlayer === "light" ? "dark" : "light";
   }
+
 } 
 
 
@@ -219,7 +221,6 @@ class MoveSelector {
       throw new Error("Cannot commit queue when no action is queued");
     }
     this.game.applyAction(this.actionQueue);
-    console.log(this.game);
     this.dequeue();
     this.deselectSquare();
   }
@@ -421,6 +422,12 @@ export class Highlighter {
     this.updateHighlightedSquares();
   }
 
+  getTransition() : Transition {
+    let next = this.moveSelector.toQueuedBoard()
+    let prev = this.moveSelector.toBoard();
+    return Transition.from(prev, next);
+  }
+
   getBoard() : GameState {
     return this.moveSelector.toQueuedBoard();
   }
@@ -447,6 +454,7 @@ export class Highlighter {
     let [x,y] = position.toArray();
     return this.highlightSquares[y]![x];
   }
+
 }
 
 // Small sanity test
@@ -455,4 +463,6 @@ console.assert(
   GameState.fromFEN(openingPosition).toFEN() === openingPosition,
   "FEN string for opening position is incorrect"
 );
+
+
 
