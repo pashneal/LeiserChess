@@ -2,6 +2,7 @@ import { PieceDescriptor} from './piece';
 import type { RelativeRotation } from './spatialUtils';
 import { Direction , Position} from './spatialUtils';
 import type { Board , Player} from './board';
+import {Laser} from './laser';
 
 export interface Action {
   /*
@@ -251,32 +252,14 @@ export class Zap implements Action {
   }
 
   appliedTo(board : Board ) : Board {
-    let newBoard = board; 
-    let travelingDirection : Direction | null = this.piece.getDirection();
-    let currentPosition = travelingDirection.appliedTo(this.initialPosition);
-
-    // Travel and reflect off pieces until we hit a piece or the edge of the board
-    while ( currentPosition.isWithinBounds() && travelingDirection !== null) {
-
-      let [x, y] = currentPosition.toArray();
-      let piece = newBoard[y]![x]!;
-
-      // If we hit a piece, reflect off it
-      // If there is no reflection, we are done
-      if (piece.isEmpty()) {
-        let reflection = piece!.reflect(travelingDirection);
-        if (reflection === null) { break; }
-        travelingDirection = reflection;
-      }
-      currentPosition = travelingDirection.appliedTo(currentPosition);
+    let laser = new Laser(board, this.initialPosition, this.piece.getDirection());
+    let newBoard = board;
+    let lastPosition = laser.getFinalPosition()
+    if (lastPosition === null) {
+      return newBoard;
     }
-
-    // If the laser stopped at a piece, remove it
-    if (currentPosition.isWithinBounds()) {
-      let [x,y] = currentPosition.toArray();
-      newBoard[y]![x] = PieceDescriptor.empty();
-    }
-
+    let [x, y] = lastPosition.toArray();
+    newBoard[y]![x] = PieceDescriptor.empty();
     return newBoard;
   }
 

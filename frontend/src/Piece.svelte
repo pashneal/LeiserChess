@@ -17,7 +17,6 @@
 
 
   function moveIn( node, { duration = 400, cssFunc = moveEast} ){
-    const style = getComputedStyle(node);
 
     return {
       duration,
@@ -28,6 +27,7 @@
 </script>
 
 
+{#key piece.uiIndex()}
 <div in:moveIn={{duration : 400, cssFunc : cssFunction}} class="{color} {name}"> 
   {#if name === "queen"}
     <div direction={direction}>
@@ -39,6 +39,7 @@
     </svg>
   {/if}
 </div>
+{/key}
 
 <style>
 

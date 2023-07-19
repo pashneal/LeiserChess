@@ -6,8 +6,7 @@ type EasingFunction = (t: number) => string;
 type TransitionMap = Map<string, EasingFunction>;
 
 
-const none = (t:number, easing : EasingFunction) => ``;
-
+const none = (t:number) => ``;
 
 const moveWest = (t: number) => `transform: translateX(${100-t*100}%);`;
 const moveEast = (t: number) => `transform: translateX(${t*100-100}%);`;
@@ -58,8 +57,10 @@ export class Transition {
       }
     }
 
+    // Only keep differences if the initial piece is not empty
     differences = differences.filter(([init, _]) => !init.isEmpty() );
 
+    // get a difference in position based on a given uiIndex
     let positionDifferences : [string, [number, number]][]= differences.map(([init, _]) => {
       let initPos = from.get(init.uiIndex())!;
       let finalPos = to.get(init.uiIndex()) || initPos;
@@ -68,11 +69,10 @@ export class Transition {
 
     let transition = new Transition();
 
-    console.log(positionDifferences);
-
+    // Construct the appropiate transition functions
     for (let [uiIndex, [dx, dy]] of positionDifferences) {
       if (dx === 1 && dy === 0) {
-          transition.transitionFunctions.set(uiIndex, moveEast);
+        transition.transitionFunctions.set(uiIndex, moveEast);
       } else if (dx === -1 && dy === 0) {
         transition.transitionFunctions.set(uiIndex, moveWest);
       } else if (dx === 0 && dy === 1) {
