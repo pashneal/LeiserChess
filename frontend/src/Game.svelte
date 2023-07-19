@@ -3,16 +3,17 @@
   import { commitState } from "./store.js";
 </script>
 
-<div class="container">
+<div id="board">
   <Board />
-  <button on:click={() => commitState()}>Commit</button>
 </div>
 
+<button on:click={() => commitState()}>Commit</button>
 <style>
-  .container{
+  #board {
     display: flex;
     justify-content: center;
-    box-sizing: border-box;
     align-items: center;
   }
+
+
 </style>

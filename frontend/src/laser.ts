@@ -1,5 +1,7 @@
 import { Position , Direction} from "./spatialUtils"; 
 import { Board } from "./board";
+import { LASER_WIDTH } from "./constants"; 
+
 
 export class Laser { 
   private board : Board;
@@ -54,4 +56,6 @@ export class Laser {
     let lastPosition = path[path.length - 1]!
     return lastPosition.isWithinBounds() ? lastPosition : null;
   }
+
+
 }

@@ -1,14 +1,30 @@
 <script>
   // Declare a board size property
   import { flip } from "svelte/animate";
-  import Cell from "./Cell.svelte";
-  import Piece from "./Piece.svelte";
+  import { onMount } from 'svelte';
+  import Cell from "./Cell.svelte"; import Piece from "./Piece.svelte";
   import { highlightSquares , boardState , interactWithSquare } from './store.js';
+
+  let board;
+  let canvasRef;
+
+  onMount( () => {
+    const canvas = canvasRef;
+    canvas.width = board.clientWidth;
+    canvas.height = board.clientHeight;
+
+    const ctx = canvas.getContext('2d');
+    console.log(ctx);
+
+    ctx.fillStyle = 'orange';
+    ctx.fillRect(30, 30, 30, 30);
+  })
+  
 
 
 </script>
 
-<div class="board">
+<div class="board" bind:this={board}>
   {#each $boardState.board as pieces, row}
     {#each pieces as piece, col (piece.uiIndex())}
         <Cell 
@@ -26,8 +42,7 @@
   {/each}
 </div>
 
-
-
+<canvas id="laserCanvas" class="board" bind:this={canvasRef}></canvas>
 
 <style>
   .board{
@@ -49,5 +64,10 @@
       max-height: 340px;
       max-width: 340px;
     }
+  }
+
+  #laserCanvas {
+    position: absolute;
+    pointer-events: none;
   }
 </style>
