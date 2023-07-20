@@ -162,4 +162,5 @@ export class Highlighter {
     let [x,y] = position.toArray();
     return this.highlightSquares[y]![x];
   }
+
 }

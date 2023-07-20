@@ -3,10 +3,11 @@
   import { onMount } from 'svelte';
   import Cell from "./Cell.svelte"; 
   import Piece from "./Piece.svelte";
-  import { highlightSquares , boardState , interactWithSquare } from './store.js';
+  import { currentPlayer, highlightSquares , boardState , interactWithSquare, lasers} from './store.js';
 
   let boardRef;
   let canvasRef;
+
 
   onMount( () => {
     const canvas = canvasRef;
@@ -19,6 +20,10 @@
     ctx.fillStyle = 'orange';
     ctx.fillRect(30, 30, 30, 30);
   })
+
+  $: if(canvasRef) {
+    $lasers[$currentPlayer].drawPath(canvasRef)
+  };
   
 
 

@@ -1,5 +1,6 @@
 import { Position , Direction} from "./spatialUtils"; 
 import { Board } from "./board";
+import { LASER_WIDTH } from "./constants"; 
 
 
 export class Laser { 
@@ -50,6 +51,8 @@ export class Laser {
 
   fire() : Board {
     let finalPosition = this.getFinalPosition();
+
+    // if the laser ends up off the board
     if (finalPosition === null) {
       return this.board;
     }
@@ -66,9 +69,25 @@ export class Laser {
     return lastPosition.isWithinBounds() ? lastPosition : null;
   }
 
-  public draw(canvas : HTMLCanvasElement) : void {
+  public drawPath(canvas : HTMLCanvasElement) : void {
+
     let context = canvas.getContext("2d")!;
+    // Clear the canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
+    let path = this.getPath();
+
+    let squareSize = canvas.width / 8;
+    let offset = squareSize / 2;
+
+
+    for (let position of path) {
+      context.fillStyle = "red";
+      let x = position.getX() * squareSize + offset;
+      x -= LASER_WIDTH / 2;
+      let y = position.getY() * squareSize + offset;
+      y -= LASER_WIDTH / 2;
+      context.fillRect(x,y, LASER_WIDTH, LASER_WIDTH);
+    }
   }
 
 }

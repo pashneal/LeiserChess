@@ -18,7 +18,6 @@ export let boardState = derived(
   highlighter, 
   ($highlighter) => {
     let board = $highlighter.getGameState().getBoard()
-    console.log(board)
     return board
   }
 );
@@ -26,6 +25,17 @@ export let boardState = derived(
 export let transition = derived(
   highlighter, 
   ($highlighter) => $highlighter.getTransition()
+);
+
+
+export let currentPlayer = derived(
+  highlighter,
+  ($highlighter) => $highlighter.getGameState().getCurrentPlayer()
+);
+
+export let lasers = derived(
+  highlighter, 
+  ($highlighter) => $highlighter.getGameState().getLasers()
 );
 
 export function interactWithSquare(row, col) {
