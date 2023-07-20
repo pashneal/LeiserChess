@@ -1,5 +1,5 @@
 import { readable, writable , derived} from 'svelte/store';
-import { GameState , Highlighter} from './board';
+import { GameState , Highlighter} from './gameState';
 import { Position } from './spatialUtils';
 
 
@@ -15,7 +15,11 @@ export let highlightSquares = derived(
 
 export let boardState = derived(
   highlighter, 
-  ($highlighter) => $highlighter.getBoard() 
+  ($highlighter) => {
+    let board = $highlighter.getGameState().getBoard()
+    console.log(board)
+    return board
+  }
 );
 
 export let transition = derived(
@@ -36,7 +40,7 @@ export function interactWithSquare(row, col) {
 export function commitState() {
   highlighter.update((value) => {
     value.commit() ; 
-    console.log(value.getBoard());
+    console.log(value.getGameState());
     return value
   })
 }

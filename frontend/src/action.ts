@@ -91,8 +91,8 @@ export class Move implements Action {
 
   appliedTo(board : Board ) : Board {
     let newBoard = board; 
-    newBoard[this.toPosition.getY()]![this.toPosition.getX()] = this.piece;
-    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = PieceDescriptor.empty();
+    newBoard.setPiece(this.toPosition, this.piece);
+    newBoard.clearPiece(this.fromPosition);
     return newBoard;
   }
   matchPlayer(player : Player): boolean{
@@ -150,11 +150,12 @@ export class Rotation implements Action {
     return !this.piece.getDirection().equals(this.newDirection);
   }
 
-  appliedTo(board : PieceDescriptor[][]) : PieceDescriptor[][] {
+  appliedTo(board : Board) : Board{
     let newBoard = board; 
-    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.transformedPiece();
+    newBoard.setPiece(this.fromPosition, this.transformedPiece());
     return newBoard;
   }
+
   matchPlayer(player : Player): boolean{
     return this.piece.getColor() as Player == player;
   }
@@ -207,10 +208,9 @@ export class Swap implements Action {
   }
 
   appliedTo(board : Board ) : Board {
-    let newBoard = board; 
-    newBoard[this.toPosition.getY()]![this.toPosition.getX()] = this.sourcePiece;
-    newBoard[this.fromPosition.getY()]![this.fromPosition.getX()] = this.targetPiece;
-    return newBoard;
+    board.setPiece(this.toPosition, this.sourcePiece);
+    board.setPiece(this.fromPosition, this.targetPiece);
+    return board;
   }
 
   matchPlayer(player : Player): boolean{
@@ -258,8 +258,7 @@ export class Zap implements Action {
     if (lastPosition === null) {
       return newBoard;
     }
-    let [x, y] = lastPosition.toArray();
-    newBoard[y]![x] = PieceDescriptor.empty();
+    newBoard.clearPiece(lastPosition)
     return newBoard;
   }
 

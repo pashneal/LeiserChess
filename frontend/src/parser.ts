@@ -54,7 +54,7 @@ export function parseCurrentPlayer(input : string) : [null | string, string]{
 }
 
 
-export function parseBoard(input : string) : [Board, Player]{
+export function parseBoard(input : string) : [PieceDescriptor[][], Player | undefined]{
 
   let board = Array.from({length: BOARD_SIZE}, () => Array.from({length: BOARD_SIZE}, () => PieceDescriptor.empty()));
   let row = 0;
@@ -86,8 +86,15 @@ export function parseBoard(input : string) : [Board, Player]{
       throw new Error("Could not parse after this input: " + input);
     }
   }
-  currentPlayer = currentPlayer?.toLowerCase();
-  currentPlayer = currentPlayer === "w" ? "light" : "dark";
-  return [board, currentPlayer as Player];
+
+  if (currentPlayer !== undefined) {
+    currentPlayer = currentPlayer.toLowerCase();
+    currentPlayer = currentPlayer === "w" ? "light" : "dark";
+    currentPlayer = currentPlayer as Player;
+  } else {
+    currentPlayer = undefined;
+  }
+
+  return [board, currentPlayer];
 }
 

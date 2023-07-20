@@ -1,5 +1,6 @@
-import { GameState } from './board';
+import { GameState } from './gameState';
 import { PieceDescriptor } from './piece';
+import { BOARD_SIZE } from './constants';
 import { Position } from './spatialUtils';
 
 type EasingFunction = (t: number) => string;
@@ -33,8 +34,8 @@ export class Transition {
   private transitionFunctions : TransitionMap = new Map<string, EasingFunction>()
   
   static from(initialState: GameState, finalState: GameState) {
-    let initial = initialState.toArray();
-    let final = finalState.toArray(); 
+    let initial = initialState.getBoard();
+    let final = finalState.getBoard(); 
 
 
 
@@ -42,10 +43,10 @@ export class Transition {
     let differences : [PieceDescriptor, PieceDescriptor][] = [];
     let from = new Map<string, Position>();
     let to = new Map<string, Position>();
-    for (let row = 0; row < initial.length; row++) {
-      for (let col = 0; col < initial[row]!.length; col++) {
-        let initialPiece = initial[row]![col]!;
-        let finalPiece = final[row]![col]!;
+    for (let row = 0; row < BOARD_SIZE; row++) {
+      for (let col = 0; col < BOARD_SIZE; col++) {
+        let initialPiece = initial.at(row, col);
+        let finalPiece = final.at(row, col);
 
         if (initialPiece.uiIndex() !== finalPiece.uiIndex()) {
 

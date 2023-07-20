@@ -10,7 +10,6 @@
   let transitionFunction = $transition.ofPiece(piece);
   let cssFunction = (t) => transitionFunction( quintOut(t) );
 
-
   let name = (piece.isEmpty()) ? "": piece.getType() ;
   let color = (piece.isEmpty()) ? "": piece.getColor() ;
   let direction = (piece.isEmpty()) ? "": piece.getDirection() ;
@@ -27,7 +26,6 @@
 </script>
 
 
-{#key piece.uiIndex()}
 <div in:moveIn={{duration : 400, cssFunc : cssFunction}} class="{color} {name}"> 
   {#if name === "queen"}
     <div direction={direction}>
@@ -39,7 +37,6 @@
     </svg>
   {/if}
 </div>
-{/key}
 
 <style>
 

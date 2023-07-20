@@ -1,9 +1,10 @@
-import type { GameState } from './board';
+import type { GameState } from './gameState';
 import type { PieceDescriptor } from './piece';
-import { Position, PawnDirection, QueenDirection } from './spatialUtils';
+import { Position} from './spatialUtils';
 import { Move, Rotation , Swap} from './action';
 import type { Action } from './action';
 
+// Only return legal actions 
 export function generateActions( game : GameState, position : Position) : Array<Action> {
   let actions = Array<Action>();
   let rotations = generateRotations(game, position);
@@ -14,7 +15,7 @@ export function generateActions( game : GameState, position : Position) : Array<
   actions = actions.concat(moves);
   actions = actions.concat(swaps);
 
-  // All actions lead to legal game states
+  // All actions must lead to legal game states
   actions = actions.filter((action) => game.isLegalAction(action))  
 
   return actions;

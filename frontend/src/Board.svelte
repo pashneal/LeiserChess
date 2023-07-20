@@ -1,17 +1,17 @@
 <script>
   // Declare a board size property
-  import { flip } from "svelte/animate";
   import { onMount } from 'svelte';
-  import Cell from "./Cell.svelte"; import Piece from "./Piece.svelte";
+  import Cell from "./Cell.svelte"; 
+  import Piece from "./Piece.svelte";
   import { highlightSquares , boardState , interactWithSquare } from './store.js';
 
-  let board;
+  let boardRef;
   let canvasRef;
 
   onMount( () => {
     const canvas = canvasRef;
-    canvas.width = board.clientWidth;
-    canvas.height = board.clientHeight;
+    canvas.width = boardRef.clientWidth;
+    canvas.height = boardRef.clientHeight;
 
     const ctx = canvas.getContext('2d');
     console.log(ctx);
@@ -24,9 +24,8 @@
 
 </script>
 
-<div class="board" bind:this={board}>
-  {#each $boardState.board as pieces, row}
-    {#each pieces as piece, col (piece.uiIndex())}
+<div class="board" bind:this={boardRef}>
+  {#each $boardState.squares() as [piece, [row, col]] (piece.uiIndex()) }
         <Cell 
           row={row} 
           col={col} 
@@ -38,7 +37,6 @@
             piece={piece}
           />
         </Cell>
-    {/each}
   {/each}
 </div>
 

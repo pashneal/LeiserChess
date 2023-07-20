@@ -1,6 +1,5 @@
 import { Position , Direction} from "./spatialUtils"; 
 import { Board } from "./board";
-import { LASER_WIDTH } from "./constants"; 
 
 
 export class Laser { 
@@ -31,8 +30,7 @@ export class Laser {
     while ( currentPosition.isWithinBounds() && travelingDirection !== null) {
       path.push(currentPosition);
 
-      let [x, y] = currentPosition.toArray();
-      let piece = board[y]![x]!;
+      let piece = board.getPiece(currentPosition)
 
       // If we hit a piece, reflect off it
       if (!piece.isEmpty()) {
@@ -50,6 +48,17 @@ export class Laser {
     return path;
   }
 
+  fire() : Board {
+    let finalPosition = this.getFinalPosition();
+    if (finalPosition === null) {
+      return this.board;
+    }
+
+    this.board.clearPiece(finalPosition);
+    return this.board;
+  }
+
+
   // Null if the laser flies off the board
   public getFinalPosition() : Position | null {
     let path = this.getPath();
@@ -57,5 +66,9 @@ export class Laser {
     return lastPosition.isWithinBounds() ? lastPosition : null;
   }
 
+  public draw(canvas : HTMLCanvasElement) : void {
+    let context = canvas.getContext("2d")!;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
 }
