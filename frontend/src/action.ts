@@ -219,7 +219,7 @@ export class Swap implements Action {
 }
 
 // Represents the zap action, that is, from a given position and piece 
-// the laser keeps moves in a straight line until it hits/reflects off another piece or
+// the laser keeps moving in a straight line until it hits/reflects off another piece or
 // hits the board edge
 export class Zap implements Action {
   constructor(
