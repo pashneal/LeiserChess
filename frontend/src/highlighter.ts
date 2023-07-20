@@ -3,6 +3,7 @@ import type { Direction} from "./spatialUtils";
 import { MoveSelector } from "./moveSelector";
 import { Position } from "./spatialUtils";
 import { Rotation, Action} from "./action";
+import { GameState } from './gameState';  
 import {Transition} from "./transition";
 export type Highlight = "none" | "main" | "secondary";
 

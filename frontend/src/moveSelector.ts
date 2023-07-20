@@ -1,5 +1,6 @@
 import { PieceDescriptor } from "./piece";
 import { GameState } from "./gameState";
+import { Player } from "./board";
 import { generateActions } from "./actionGenerator";
 import { Position } from "./spatialUtils";
 import { Action} from "./action";
