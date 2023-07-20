@@ -1,5 +1,6 @@
 import { readable, writable , derived} from 'svelte/store';
-import { GameState , Highlighter} from './gameState';
+import { GameState } from './gameState';
+import { Highlighter } from './highlighter';
 import { Position } from './spatialUtils';
 
 
