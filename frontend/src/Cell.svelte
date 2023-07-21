@@ -43,6 +43,7 @@
     flex-shrink: 0;
     box-sizing: border-box;
     aspect-ratio: 1;
+    border-radius: 15%;
   }
 
   .light {
@@ -59,7 +60,7 @@
   }
 
   [highlight='secondary'] {
-    border: 3px solid red;
+    border: 3px dashed red;
   }
 </style>
 

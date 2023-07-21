@@ -21,20 +21,23 @@ export type QueenLasers = { "light" : Laser, "dark" : Laser};
 //     legal actions  after an initial input FEN
 export class GameState {
   private board : Board;
-  private history : Array<String> 
+  private fenHistory : Array<String> 
+  private actionHistory : Array<Action>
   private currentPlayer : Player;
 
   private constructor() {
     this.currentPlayer = "light";
-    this.history = [];
+    this.fenHistory = [];
+    this.actionHistory = [];
     // Fill 2D array with PieceDescriptor.empty
     this.board = Board.empty();  
   }
 
   copy () : GameState{ 
     let game = new GameState();
-    game.history = this.history.slice();
+    game.fenHistory = this.fenHistory.slice();
     game.board = this.board.copy();
+    game.actionHistory = this.actionHistory.slice();
     game.currentPlayer = this.currentPlayer;
     return game;
   }
@@ -48,7 +51,7 @@ export class GameState {
      let [board, player] = parseBoard(fenString);
      gameState.board = new Board(board);
      gameState.currentPlayer = player!;
-     gameState.history = [gameState.board.toFEN()];
+     gameState.fenHistory = [gameState.board.toFEN()];
      return gameState;
   }
 
@@ -129,7 +132,7 @@ export class GameState {
     game.fireLaser(this.currentPlayer);
 
     // None of the previous 2 states can be the same as the state after the action
-    if (this.history.slice(-2).some((state) => state === game.board.toFEN())) {
+    if (this.fenHistory.slice(-2).some((state) => state === game.board.toFEN())) {
       return false;
     }
 
@@ -142,17 +145,20 @@ export class GameState {
   tryAction(action : Action) {
     // Transform the board according to the action
     this.board = action.appliedTo(this.board);
+    this.actionHistory.push(action);
   }
 
   commitAction(action : Action) {
+    console.log("Action commited!")
     if (!this.isLegalAction(action)) {
       throw new Error("The selected action is not legal " +  JSON.stringify(action));
     }
 
     this.tryAction(action);
     this.fireLaser(this.currentPlayer);
-    this.history.push(this.board.toFEN());
+    this.fenHistory.push(this.board.toFEN());
     this.currentPlayer = this.currentPlayer === "light" ? "dark" : "light";
+    console.log(this);
   }
 
   getLasers(): QueenLasers {
@@ -161,6 +167,15 @@ export class GameState {
       "dark" : this.getQueenLaser("dark")
     }
   }
+
+  getActionHistory() : Array<[Action, string]> {
+    let actionHistory = new Array<[Action, string]>();
+    for (let action of this.actionHistory) {
+      actionHistory.push([action, action.toString()]);
+    }
+    return actionHistory;
+  }
+
 } 
 
 

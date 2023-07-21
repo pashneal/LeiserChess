@@ -89,8 +89,14 @@ export class Laser {
       context.lineTo(x * squareSize + offset, 
                      y * squareSize + offset);
     }
+    let [x, y] = path[0]!.toArray();
+    const gradient = context.createLinearGradient(0,0,canvas.width, canvas.height);
+    gradient.addColorStop(0, "magenta");
+    gradient.addColorStop(0.5, "blue");
+    gradient.addColorStop(1.0, "red");
+    context.strokeStyle = gradient;
     context.lineWidth = LASER_WIDTH;
-    context.strokeStyle = "red";
+
     context.stroke();
 
   }

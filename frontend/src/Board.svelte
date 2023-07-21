@@ -29,25 +29,32 @@
 
 </script>
 
-<div class="board" bind:this={boardRef}>
-  {#each $boardState.squares() as [piece, [row, col]] (piece.uiIndex()) }
-        <Cell 
-          row={row} 
-          col={col} 
-          highlight={$highlightSquares[row][col]}
+<!--<div id="border">-->
+  <div class="board" bind:this={boardRef}>
+    {#each $boardState.squares() as [piece, [row, col]] (piece.uiIndex()) }
+          <Cell 
+            row={row} 
+            col={col} 
+            highlight={$highlightSquares[row][col]}
 
-          on:clicked={() => (interactWithSquare(row,col))}
-        >
-          <Piece 
-            piece={piece}
-          />
-        </Cell>
-  {/each}
-</div>
+            on:clicked={() => (interactWithSquare(row,col))}
+          >
+            <Piece 
+              piece={piece}
+            />
+          </Cell>
+    {/each}
+  </div>
+<!--</div>-->
 
 <canvas id="laserCanvas" class="board" bind:this={canvasRef}></canvas>
 
 <style>
+  #border {
+    border: 30px solid #eee;
+    flex-shrink: 0;
+    justify-content: center;
+  }
   .board{
     height: 60vh;
     width: 60vh;
