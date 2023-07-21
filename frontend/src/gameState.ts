@@ -3,6 +3,7 @@ import { parseBoard } from "./parser";
 import { BOARD_SIZE } from './constants';
 import { Position } from "./spatialUtils";
 import {Action} from "./action";
+import { consecutivePairsOf , everyOther} from "./utils";
 import { Laser } from "./laser";
 import { Board } from "./board";
 
@@ -168,11 +169,18 @@ export class GameState {
     }
   }
 
-  getActionHistory() : Array<[Action, string]> {
-    let actionHistory = new Array<[Action, string]>();
-    for (let action of this.actionHistory) {
-      actionHistory.push([action, action.toString()]);
+  getActionHistory() : Array<[string, string]> {
+
+    let representations = this.actionHistory.map((action) => action.toString());
+
+    // Pad the history with "..." if the first action was made by the second player
+    if (this.actionHistory.length > 0 && 
+        this.actionHistory[0]!.matchPlayer("dark")) {
+      representations.unshift("...");
     }
+
+
+    let actionHistory = everyOther(consecutivePairsOf(representations, "..."));
     return actionHistory;
   }
 

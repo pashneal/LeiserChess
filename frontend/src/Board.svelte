@@ -29,7 +29,7 @@
 
 </script>
 
-<!--<div id="border">-->
+<div id="border">
   <div class="board" bind:this={boardRef}>
     {#each $boardState.squares() as [piece, [row, col]] (piece.uiIndex()) }
           <Cell 
@@ -45,7 +45,7 @@
           </Cell>
     {/each}
   </div>
-<!--</div>-->
+</div>
 
 <canvas id="laserCanvas" class="board" bind:this={canvasRef}></canvas>
 
