@@ -1,6 +1,6 @@
 import { Position , Direction} from "./spatialUtils"; 
 import { Board } from "./board";
-import { LASER_WIDTH } from "./constants"; 
+import { BOARD_SIZE, LASER_WIDTH } from "./constants"; 
 
 
 export class Laser { 
@@ -24,7 +24,7 @@ export class Laser {
     let currentPosition = this.position;
     let path : Array<Position> = [];
 
-      
+    path.push(currentPosition);
     currentPosition = travelingDirection.appliedTo(currentPosition);
 
     // Travel and reflect off pieces until we hit a piece or the edge of the board
@@ -76,18 +76,23 @@ export class Laser {
     context.clearRect(0, 0, canvas.width, canvas.height);
     let path = this.getPath();
 
-    let squareSize = canvas.width / 8;
+    let squareSize = canvas.width / BOARD_SIZE;
     let offset = squareSize / 2;
 
 
-    for (let position of path) {
-      context.fillStyle = "red";
-      let x = position.getX() * squareSize + offset;
-      x -= LASER_WIDTH / 2;
-      let y = position.getY() * squareSize + offset;
-      y -= LASER_WIDTH / 2;
-      context.fillRect(x,y, LASER_WIDTH, LASER_WIDTH);
+    // Draw the path connected according to adjacent squares
+    context.beginPath();
+    context.moveTo(path[0]!.getX() * squareSize + offset, 
+                   path[0]!.getY() * squareSize + offset );
+    for (let i = 1; i < path.length; i++) {
+      let [x, y] = path[i]!.toArray();
+      context.lineTo(x * squareSize + offset, 
+                     y * squareSize + offset);
     }
+    context.lineWidth = LASER_WIDTH;
+    context.strokeStyle = "red";
+    context.stroke();
+
   }
 
 }

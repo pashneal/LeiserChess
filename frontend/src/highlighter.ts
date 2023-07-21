@@ -33,7 +33,7 @@ export class Highlighter {
     this.highlightSquares = [];
 
     // Fill the highlightSquares array with "none" values
-    Array.from(Array(8), () => Array(8).fill("none")).forEach((row) => {
+    Array.from(Array(BOARD_SIZE), () => Array(BOARD_SIZE).fill("none")).forEach((row) => {
       this.highlightSquares.push(row);
     });
   }
