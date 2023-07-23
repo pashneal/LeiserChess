@@ -3,7 +3,7 @@
   import { flip } from "svelte/animate";
   import { fade } from "svelte/transition";
   import { quintOut } from "svelte/easing";
-  import { transition } from "./store.js";
+  import { transition } from "../store.js";
   export let piece;
 
 

@@ -1,7 +1,7 @@
-import { GameState } from './gameState';
-import { PieceDescriptor } from './piece';
-import { BOARD_SIZE } from './constants';
-import { Position } from './spatialUtils';
+import { GameState } from '../Game/gameState';
+import { PieceDescriptor } from '../Game/piece';
+import { BOARD_SIZE } from '../constants';
+import { Position } from '../Utils/spatialUtils';
 
 type EasingFunction = (t: number) => string;
 type TransitionMap = Map<string, EasingFunction>;

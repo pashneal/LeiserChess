@@ -1,6 +1,6 @@
 <script>
   import Board from "./Board.svelte";
-  import { commitState } from "./store.js";
+  import { commitState } from "../store.js";
   import MoveHistory from "./MoveHistory.svelte"; 
 </script>
 

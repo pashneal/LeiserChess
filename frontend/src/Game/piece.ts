@@ -1,7 +1,7 @@
 export type PieceType = "queen" | "pawn";
 export type PieceColor = "light" | "dark";
-import type { Position , Direction } from './spatialUtils';
-import {PawnDirection, QueenDirection} from './spatialUtils';
+import type { Position , Direction } from '../Utils/spatialUtils';
+import {PawnDirection, QueenDirection} from '../Utils/spatialUtils';
 
 var uid = 0;
 

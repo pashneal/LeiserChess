@@ -1,6 +1,6 @@
-import { Position , Direction} from "./spatialUtils"; 
-import { Board } from "./board";
-import { BOARD_SIZE, LASER_WIDTH } from "./constants"; 
+import { Position , Direction} from "../Utils/spatialUtils"; 
+import { Board } from "../Game/board";
+import { BOARD_SIZE, LASER_WIDTH } from "../constants"; 
 
 
 export class Laser { 

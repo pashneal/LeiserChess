@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
   import Cell from "./Cell.svelte"; 
   import Piece from "./Piece.svelte";
-  import { currentPlayer, highlightSquares , boardState , interactWithSquare, lasers} from './store.js';
+  import { currentPlayer, highlightSquares , boardState , interactWithSquare, lasers} from '../store.js';
 
   let boardRef;
   let canvasRef;
