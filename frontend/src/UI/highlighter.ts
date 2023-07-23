@@ -1,9 +1,9 @@
 import { BOARD_SIZE } from '../constants';
-import type { Direction} from "../Utils/spatialUtils";
+import type { Direction} from "../Utils/spatial";
 import { MoveSelector } from "./moveSelector";
-import { Position } from "../Utils/spatialUtils";
+import { Position } from "../Utils/spatial";
 import { Rotation, Action} from "../Action/action";
-import { GameState } from '../Game/gameState';  
+import { GameState } from '../Game/state';  
 import {Transition} from "../Transition/transition";
 export type Highlight = "none" | "main" | "secondary";
 

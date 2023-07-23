@@ -1,6 +1,6 @@
-import type { GameState } from '../Game/gameState';
+import type { GameState } from '../Game/state';
 import type { PieceDescriptor } from '../Game/piece';
-import { Position} from '../Utils/spatialUtils';
+import { Position} from '../Utils/spatial';
 import { Move, Rotation , Swap} from '../Action/action';
 import type { Action } from '../Action/action';
 

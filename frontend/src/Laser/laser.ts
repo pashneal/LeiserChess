@@ -1,4 +1,4 @@
-import { Position , Direction} from "../Utils/spatialUtils"; 
+import { Position , Direction} from "../Utils/spatial"; 
 import { Board } from "../Game/board";
 import { BOARD_SIZE, LASER_WIDTH } from "../constants"; 
 

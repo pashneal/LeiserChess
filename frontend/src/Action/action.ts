@@ -1,7 +1,7 @@
 import { PieceDescriptor} from '../Game/piece';
 import type { Board , Player} from '../Game/board';
-import type { RelativeRotation } from '../Utils/spatialUtils';
-import { Direction , Position} from '../Utils/spatialUtils';
+import type { RelativeRotation } from '../Utils/spatial';
+import { Direction , Position} from '../Utils/spatial';
 import {Laser} from '../Laser/laser';
 
 export interface Action {
