@@ -1,8 +1,8 @@
-import { PieceDescriptor} from '../Game/piece';
-import type { Board , Player} from '../Game/board';
-import type { RelativeRotation } from '../Utils/spatial';
-import { Direction , Position} from '../Utils/spatial';
-import {Laser} from '../Laser/laser';
+import { PieceDescriptor} from "../game/piece";
+import type { Board , Player} from "../game/board";
+import type { RelativeRotation } from "../utils/spatial";
+import { Direction , Position} from "../utils/spatial";
+import {Laser} from "../laser/laser";
 
 export interface Action {
   /*

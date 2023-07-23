@@ -1,8 +1,8 @@
 import { PieceDescriptor } from "./piece";
 import { parseBoard } from "./parser";
 import { BOARD_SIZE } from '../constants';
-import { Position } from "../Utils/spatial";
-import { Laser } from "../Laser/laser";
+import { Position } from "../utils/spatial";
+import { Laser } from "../laser/laser";
 
 export type Player = "light" | "dark";
 export type QueenLasers = { "light" : Laser, "dark" : Laser};

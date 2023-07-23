@@ -1,10 +1,10 @@
 import { PieceDescriptor } from "./piece";
 import { parseBoard } from "./parser";
 import { BOARD_SIZE } from "../constants";
-import { Position } from "../Utils/spatial";
-import {Action} from "../Action/action";
-import { consecutivePairsOf , everyOther} from "../Utils/ext";
-import { Laser } from "../Laser/laser";
+import { Position } from "../utils/spatial";
+import {Action} from "../action/action";
+import { consecutivePairsOf , everyOther} from "../utils/ext";
+import { Laser } from "../laser/laser";
 import { Board } from "./board";
 
 export type Player = "light" | "dark";

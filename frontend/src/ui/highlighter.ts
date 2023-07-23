@@ -1,10 +1,10 @@
 import { BOARD_SIZE } from '../constants';
-import type { Direction} from "../Utils/spatial";
+import type { Direction} from "../utils/spatial";
 import { MoveSelector } from "./moveSelector";
-import { Position } from "../Utils/spatial";
-import { Rotation, Action} from "../Action/action";
-import { GameState } from '../Game/state';  
-import {Transition} from "../Transition/transition";
+import { Position } from "../utils/spatial";
+import { Rotation, Action} from "../action/action";
+import { GameState } from '../game/state';  
+import {Transition} from "../transition/transition";
 export type Highlight = "none" | "main" | "secondary";
 
 // Helps the UI figure out where to highlight using some move selector

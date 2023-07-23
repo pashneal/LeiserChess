@@ -1,11 +1,11 @@
-import { PieceDescriptor } from "../Game/piece";
-import { GameState } from "../Game/state";
-import { Player } from "../Game/board";
+import { PieceDescriptor } from "../game/piece";
+import { GameState } from "../game/state";
+import { Player } from "../game/board";
 
-import { generateActions } from "../Action/generation";
-import { Action} from "../Action/action";
+import { generateActions } from "../action/generation";
+import { Action} from "../action/action";
 
-import { Position } from "../Utils/spatial";
+import { Position } from "../utils/spatial";
 
 // MoveSelector is a class designed to help with state management of 
 // an interactive game of LeiserChess. It uses a 3-stage commit process

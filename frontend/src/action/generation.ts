@@ -1,8 +1,8 @@
-import type { GameState } from '../Game/state';
-import type { PieceDescriptor } from '../Game/piece';
-import { Position} from '../Utils/spatial';
-import { Move, Rotation , Swap} from '../Action/action';
-import type { Action } from '../Action/action';
+import type { GameState } from "../game/state";
+import type { PieceDescriptor } from "../game/piece";
+import { Position} from "../utils/spatial";
+import { Move, Rotation , Swap} from "../action/action";
+import type { Action } from "../action/action";
 
 // Only return legal actions 
 export function generateActions( game : GameState, position : Position) : Array<Action> {
