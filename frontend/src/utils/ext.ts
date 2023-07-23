@@ -11,3 +11,10 @@ export function consecutivePairsOf<T>(array: T[], padding : T): [T, T ][] {
 export function everyOther<T>(array: T[]): T[] {
   return array.filter((_, index) => index % 2 === 0);
 }
+
+export function last<T>(array: T[]): T {
+  if (array.length === 0) {
+    throw new Error("Cannot get the last element of an empty array");
+  }
+  return array[array.length - 1]!;
+}

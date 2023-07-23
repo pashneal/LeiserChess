@@ -1,6 +1,6 @@
 <script>
   import Board from "./Board.svelte";
-  import { commitState } from "../store.js";
+  import { commitState , undoAction} from "../store.js";
   import MoveHistory from "./MoveHistory.svelte"; 
 </script>
 
@@ -18,6 +18,7 @@
 </div>
 
 <button on:click={() => commitState()}>Commit</button>
+<button on:click={() => undoAction()}>Undo</button>
 <style>
 
   #title {

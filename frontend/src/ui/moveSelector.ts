@@ -128,4 +128,8 @@ export class MoveSelector {
     return game;
   }
 
+  undo() {
+    this.game.undoAction();
+  }
+
 }

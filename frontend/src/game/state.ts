@@ -3,7 +3,7 @@ import { parseBoard } from "./parser";
 import { BOARD_SIZE } from "../constants";
 import { Position } from "../utils/spatial";
 import {Action} from "../action/action";
-import { consecutivePairsOf , everyOther} from "../utils/ext";
+import { consecutivePairsOf , everyOther, last} from "../utils/ext";
 import { Laser } from "../laser/laser";
 import { Board } from "./board";
 
@@ -22,7 +22,7 @@ export type QueenLasers = { "light" : Laser, "dark" : Laser};
 //     legal actions  after an initial input FEN
 export class GameState {
   private board : Board;
-  private fenHistory : Array<String> 
+  private fenHistory : Array<string> 
   private actionHistory : Array<Action>
   private currentPlayer : Player;
 
@@ -67,10 +67,6 @@ export class GameState {
 
   getPiece(position : Position) : PieceDescriptor {
     return this.board.getPiece(position);
-  }
-
-  private setPiece(position : Position , piece : PieceDescriptor ) {
-    this.board.setPiece(position, piece);
   }
 
   // Returns a copy of the board state's internals
@@ -182,6 +178,17 @@ export class GameState {
 
     let actionHistory = everyOther(consecutivePairsOf(representations, "..."));
     return actionHistory;
+  }
+
+  undoAction() {
+    if (this.actionHistory.length === 0) {
+      throw new Error("Unable to undo any actions");
+    }
+
+    this.actionHistory.pop();
+    this.fenHistory.pop();
+    this.board = Board.fromFEN(last(this.fenHistory));
+    this.currentPlayer = this.currentPlayer === "light" ? "dark" : "light";
   }
 
 } 

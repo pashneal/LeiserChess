@@ -163,4 +163,8 @@ export class Highlighter {
     return this.highlightSquares[y]![x];
   }
 
+  undo() {
+    this.moveSelector.undo();
+  }
+
 }

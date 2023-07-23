@@ -52,6 +52,13 @@ export function interactWithSquare(row, col) {
   })
 }
 
+export function undoAction() {
+  highlighter.update((value) => {
+    value.undo();
+    return value
+  })
+}
+
 export function commitState() {
   highlighter.update((value) => {
     value.commit() ; 
