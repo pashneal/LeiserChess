@@ -169,7 +169,6 @@ export class Highlighter {
   }
 
   goToMove( moveNumber : number ) {
-    this.updateHighlightedSquares();
     this.unselect();
     this.moveSelector.goToMove(moveNumber);
   }
