@@ -132,4 +132,8 @@ export class MoveSelector {
     this.game.undoAction();
   }
 
+  goToMove(moveNumber : number) {
+    this.game.goToMove(moveNumber);
+  }
+
 }

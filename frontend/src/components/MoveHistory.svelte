@@ -1,15 +1,27 @@
 <script>
   import { actionHistory } from "../store.js";
   import { fly } from "svelte/transition";
+  import { goToMove } from "../store.js";
+
 </script>
 
 
 <div id="container">
   <h1>Move History</h1>
   <table id="moves" class = "even-width-table" >
-    {#each $actionHistory as [player1, player2], index (player1 + player2)}
+    {#each $actionHistory as [player1, player2], index (player1 , player2, index)}
       <tr in:fly>
-        <td>{index+1}.</td> <td>{player1}</td> <td>{player2}</td>
+
+        <td>{index+1}.</td> 
+
+        <td on:click={goToMove(index*2)} on:keydown={goToMove(index*2)}>
+          {(player1 === null) ? "..." : player1.toString()}
+        </td> 
+
+        <td on:click={goToMove(index*2+1)} on:keydown={goToMove(index*2+1)}>
+          {(player2 === null) ? "..." : player2.toString()}
+        </td> 
+
       </tr>
     {/each}
   </table>
@@ -43,6 +55,10 @@
 
 
     letter-spacing: 0.12em;
+  }
+
+  td::hover {
+    background-color: #f5f5f5;
   }
 
 

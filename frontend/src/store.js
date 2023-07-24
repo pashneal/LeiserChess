@@ -66,3 +66,12 @@ export function commitState() {
     return value
   })
 }
+
+export function goToMove(moveNumber) {
+  if (moveNumber == null) { return }
+  console.log("going to move " + moveNumber)
+  highlighter.update((value) => {
+    let successful = value.goToMove(moveNumber);
+    return value
+  })
+}

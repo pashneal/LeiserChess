@@ -9,7 +9,7 @@ import { Board } from "./board";
 
 export type Player = "light" | "dark";
 export type QueenLasers = { "light" : Laser, "dark" : Laser};
-
+export type ActionHistory = Array<[Action | null, Action | null]> ;
 
 // GameState is a class that represents the state of the LeiserChess game
 // and it has the following guarantees:
@@ -165,18 +165,17 @@ export class GameState {
     }
   }
 
-  getActionHistory() : Array<[string, string]> {
+  getActionHistory() : ActionHistory{
 
-    let representations = this.actionHistory.map((action) => action.toString());
+    let representations : (Action | null)[]= this.actionHistory.map((action) => action);
 
     // Pad the history with "..." if the first action was made by the second player
     if (this.actionHistory.length > 0 && 
         this.actionHistory[0]!.matchPlayer("dark")) {
-      representations.unshift("...");
+      representations.unshift(null);
     }
 
-
-    let actionHistory = everyOther(consecutivePairsOf(representations, "..."));
+    let actionHistory = everyOther(consecutivePairsOf(representations));
     return actionHistory;
   }
 
@@ -189,6 +188,23 @@ export class GameState {
     this.fenHistory.pop();
     this.board = Board.fromFEN(last(this.fenHistory));
     this.currentPlayer = this.currentPlayer === "light" ? "dark" : "light";
+  }
+
+  goToMove(moveNumber : number) : boolean {
+    let boardNumber = moveNumber + 1;
+
+    if (moveNumber < 0 || boardNumber > this.fenHistory.length - 1) {
+      return false;
+    }
+
+    let fen = this.fenHistory[boardNumber]!;
+
+    this.board = Board.fromFEN(fen);
+    this.currentPlayer = boardNumber % 2 === 0 ? "light" : "dark";
+    this.fenHistory = this.fenHistory.slice(0, boardNumber + 1);
+    this.actionHistory = this.actionHistory.slice(0, moveNumber + 1);
+    console.log(this);
+    return true;
   }
 
 } 

@@ -118,11 +118,12 @@ export class Highlighter {
 
   }
 
-  private unselect() {
+  unselect() {
     if (this.moveSelector.getSelectedSquare() === null) {
       return;
     }
     this.moveSelector.deselectSquare();
+    this.updateHighlightedSquares();
   }
 
   commit() {
@@ -165,6 +166,12 @@ export class Highlighter {
 
   undo() {
     this.moveSelector.undo();
+  }
+
+  goToMove( moveNumber : number ) {
+    this.updateHighlightedSquares();
+    this.unselect();
+    this.moveSelector.goToMove(moveNumber);
   }
 
 }
