@@ -118,7 +118,7 @@ export class Highlighter {
 
   }
 
-  unselect() {
+  private unselect() {
     if (this.moveSelector.getSelectedSquare() === null) {
       return;
     }
