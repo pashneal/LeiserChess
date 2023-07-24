@@ -57,7 +57,7 @@
     letter-spacing: 0.12em;
   }
 
-  td::hover {
+  td:hover {
     background-color: #f5f5f5;
   }
 
