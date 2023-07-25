@@ -31,7 +31,7 @@
 
 <div id="border">
   <div class="board" bind:this={boardRef}>
-    {#each $boardState.squares() as [piece, [row, col]] (piece.uiIndex()) }
+    {#each $boardState.squares() as [piece, [row, col]] (piece.uiIndex() + row + col) }
           <Cell 
             row={row} 
             col={col} 
