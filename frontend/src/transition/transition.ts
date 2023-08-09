@@ -9,6 +9,8 @@ type TransitionMap = Map<string, EasingFunction>;
 
 const none = (t:number) => ``;
 
+const rotate90 = (t: number) => `transform: rotate(${t*90-90}deg);`;
+
 const moveWest = (t: number) => `transform: translateX(${100-t*100}%);`;
 const moveEast = (t: number) => `transform: translateX(${t*100-100}%);`;
 const moveNorth =(t: number) => `transform: translateY(${100-t*100}%);`;
@@ -58,6 +60,11 @@ export class Transition {
       }
     }
 
+    // Keep differences if the final and initial piece are the same
+    let sameSquare = differences.filter(([init, final]) => init.id() == final.id());
+    let rotated = sameSquare.filter(([init, final]) => !init.isEmpty())
+
+
     // Only keep differences if the initial piece is not empty
     differences = differences.filter(([init, _]) => !init.isEmpty() );
 
@@ -89,6 +96,13 @@ export class Transition {
       } else if (dx === -1 && dy === -1) {
         transition.transitionFunctions.set(uiIndex, moveNorthWest);
       }
+    }
+
+
+
+    // Construct the appropriate transition functions for rotated pieces
+    for (let [initalPiece, finalPiece] of rotated) {
+      transition.transitionFunctions.set(finalPiece.uiIndex(), rotate90);
     }
 
     return transition;
