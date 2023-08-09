@@ -18,7 +18,6 @@
   function moveIn( node, { duration = 400, cssFunc = moveEast} ){
 
     return {
-      delay: 100,
       duration,
       css : cssFunc,
     }; 
