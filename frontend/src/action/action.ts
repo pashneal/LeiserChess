@@ -252,9 +252,9 @@ export class Zap implements Action {
   }
 
   appliedTo(board : Board ) : Board {
-    let laser = new Laser(board, this.initialPosition, this.piece.getDirection());
+    let laser = new Laser(this.initialPosition, this.piece.getDirection());
     let newBoard = board;
-    let lastPosition = laser.getFinalPosition()
+    let lastPosition = laser.getFinalPosition(board)
     if (lastPosition === null) {
       return newBoard;
     }

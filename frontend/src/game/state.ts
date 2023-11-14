@@ -8,7 +8,11 @@ import { Laser } from "../laser/laser";
 import { Board } from "./board";
 
 export type Player = "light" | "dark";
-export type QueenLasers = { "light" : Laser, "dark" : Laser};
+export type QueenLasers = { 
+  "light" : Array<Laser>, 
+  "dark" : Array<Laser>, 
+};
+
 export type ActionHistory = Array<[Action | null, Action | null]> ;
 
 // GameState is a class that represents the state of the LeiserChess game
@@ -75,9 +79,11 @@ export class GameState {
   }
 
 
-  getQueen(player : Player) : [Position, PieceDescriptor] {
+  getQueens(player : Player) : Array<[Position , PieceDescriptor ]> {
     let queenPosition : Position | null = null;
     let queen : PieceDescriptor | null = null;
+
+    let queens = [];
 
     // Find the PieceDescriptor matching "queen" and color, and it's position
     for (let y = 0; y < BOARD_SIZE; y++) {
@@ -89,28 +95,31 @@ export class GameState {
         {
           queenPosition = new Position(x, y);
           queen = piece;
-          break;
+          let entry : [Position, PieceDescriptor] = [queenPosition, queen];
+          queens.push(entry);
         }
       }
     }
 
-    if (queen === null) {
-      throw new Error("No queen found for the current color");
+    return queens;
+  }
+
+  getQueenLasers(player : Player) : Array<Laser> {
+    let lasers =  [];
+    for (let [queenPosition, queen] of this.getQueens(player)) {
+      let laser = new Laser(queenPosition!, queen!.getDirection());
+      lasers.push(laser);
     }
-
-    return [queenPosition!, queen];
+    console.log(lasers);
+    return lasers;
   }
 
-  getQueenLaser(player : Player) : Laser {
-    let [queenPosition, queen] = this.getQueen(player);
-    let laser = new Laser(this.getBoard() , queenPosition, queen.getDirection());
-    return laser;
-  }
-
-  fireLaser(player : Player) {
-    let laser = this.getQueenLaser(player);
-    let newBoard = laser.fire();
-    this.board = newBoard;
+  fireLasers(player : Player) {
+    let lasers = this.getQueenLasers(player);
+    for  (let laser of lasers) {
+      let newBoard = laser.fireOn(this.board);
+      this.board = newBoard;
+    }
   }
 
   isLegalAction(action : Action) : boolean {
@@ -126,7 +135,7 @@ export class GameState {
     } catch {
       return false;
     }
-    game.fireLaser(this.currentPlayer);
+    game.fireLasers(this.currentPlayer);
 
     // None of the previous 2 states can be the same as the state after the action
     if (this.fenHistory.slice(-2).some((state) => state === game.board.toFEN())) {
@@ -152,7 +161,7 @@ export class GameState {
     }
 
     this.tryAction(action);
-    this.fireLaser(this.currentPlayer);
+    this.fireLasers(this.currentPlayer);
     this.fenHistory.push(this.board.toFEN());
     this.currentPlayer = this.currentPlayer === "light" ? "dark" : "light";
     console.log(this);
@@ -160,8 +169,8 @@ export class GameState {
 
   getLasers(): QueenLasers {
     return { 
-      "light" : this.getQueenLaser("light"),
-      "dark" : this.getQueenLaser("dark")
+      "light" : this.getQueenLasers("light"),
+      "dark" : this.getQueenLasers("dark"),
     }
   }
 
@@ -211,7 +220,7 @@ export class GameState {
 
 
 // Small sanity test
-let openingPosition = "ss7/3nwse3/2nwse4/1nwse3NW1/1se3NWSE1/4NWSE2/3NWSE3/7NN W";
+let openingPosition = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS W";
 console.assert(
   GameState.fromFEN(openingPosition).toFEN() === openingPosition,
   `FEN string for opening position is incorrect ${GameState.fromFEN(openingPosition).toFEN()}`

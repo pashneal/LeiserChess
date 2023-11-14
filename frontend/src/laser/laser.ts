@@ -4,12 +4,10 @@ import { BOARD_SIZE, LASER_WIDTH } from "../constants";
 
 
 export class Laser { 
-  private board : Board;
   private position : Position;
   private direction : Direction;
   
-  constructor( newBoard : Board, initalPosition : Position , initialDirection : Direction)  {
-    this.board = newBoard;
+  constructor( initalPosition : Position , initialDirection : Direction)  {
     this.position = initalPosition;
     this.direction = initialDirection;
 
@@ -18,8 +16,7 @@ export class Laser {
     }
   }
 
-  public getPath() : Array<Position> {
-    let board = this.board;
+  public getPathOn(board: Board) : Array<Position> {
     let travelingDirection  : Direction | null = this.direction;
     let currentPosition = this.position;
     let path : Array<Position> = [];
@@ -49,32 +46,30 @@ export class Laser {
     return path;
   }
 
-  fire() : Board {
-    let finalPosition = this.getFinalPosition();
+  fireOn(board: Board) : Board {
+    let finalPosition = this.getFinalPosition(board);
 
     // if the laser ends up off the board
     if (finalPosition === null) {
-      return this.board;
+      return board
     }
 
-    this.board.clearPiece(finalPosition);
-    return this.board;
+    board.clearPiece(finalPosition);
+    return board;
   }
 
 
   // Null if the laser flies off the board
-  public getFinalPosition() : Position | null {
-    let path = this.getPath();
+  public getFinalPosition(board: Board) : Position | null {
+    let path = this.getPathOn(board);
     let lastPosition = path[path.length - 1]!
     return lastPosition.isWithinBounds() ? lastPosition : null;
   }
 
-  public drawPath(canvas : HTMLCanvasElement) : void {
+  public drawPathOn(canvas : HTMLCanvasElement, board : Board) : void {
 
     let context = canvas.getContext("2d")!;
-    // Clear the canvas
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    let path = this.getPath();
+    let path = this.getPathOn(board);
 
     let squareSize = canvas.width / BOARD_SIZE;
     let offset = squareSize / 2;

@@ -22,7 +22,11 @@
   })
 
   $: if(canvasRef) {
-    $lasers[$currentPlayer].drawPath(canvasRef)
+    const ctx = canvasRef.getContext('2d');
+    ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+    for (let laser of $lasers[$currentPlayer]) {
+      laser.drawPathOn(canvasRef, $boardState)
+    }
   };
   
 
