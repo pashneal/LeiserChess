@@ -1,7 +1,7 @@
 import type { GameState } from "../game/state";
 import type { PieceDescriptor } from "../game/piece";
 import { Position} from "../utils/spatial";
-import { Move, Rotation , Swap} from "../action/action";
+import { Move, Rotation , Shove, NullMove} from "../action/action";
 import type { Action } from "../action/action";
 
 // Only return legal actions 
@@ -9,11 +9,13 @@ export function generateActions( game : GameState, position : Position) : Array<
   let actions = Array<Action>();
   let rotations = generateRotations(game, position);
   let moves = generateMoves(game, position);
-  let swaps = generateSwaps(game, position);
+  let shoves = generateShoves(game, position);
+  let nullMove = generateNullMove(game, position); 
 
   actions = actions.concat(rotations);
   actions = actions.concat(moves);
-  actions = actions.concat(swaps);
+  actions = actions.concat(shoves);
+  actions = actions.concat(nullMove);
 
   // All actions must lead to legal game states
   actions = actions.filter((action) => game.isLegalAction(action))  
@@ -40,7 +42,8 @@ function getAdjacentPositions(position : Position) : Array<Position> {
 }
 
 
-function generateSwaps(game : GameState, sourcePosition : Position) : Array<Action> {
+
+function generateShoves(game : GameState, sourcePosition : Position) : Array<Action> {
   let piece = game.getPiece(sourcePosition);
   if (piece.isEmpty()) { return []; }
 
@@ -48,17 +51,27 @@ function generateSwaps(game : GameState, sourcePosition : Position) : Array<Acti
   let adjacent = getAdjacentPositions(sourcePosition);
   let hasTargetPiece = adjacent.filter((pos) => !game.getPiece(pos).isEmpty() );
 
-  let targetPieces: Array<[Position, PieceDescriptor]> = [];
-  targetPieces = hasTargetPiece.map((pos) => [pos, game.getPiece(pos)!]);
-  let swaps = targetPieces.map(([targetPosition, targetPiece]) => new Swap(
+  // queen cannot be shoved
+  hasTargetPiece = hasTargetPiece.filter((pos) => game.getPiece(pos).getType() !== "queen"); 
+
+  // calculate distance from middle of the board
+  let distance = (p : Position) => {
+    let [x,y] = [p.getX(), p.getY()];
+    let [cx, cy] = [3.5, 3.5];
+    return (x-cx)**2 + (y-cy)**2;
+  }
+
+  // only strictly increasing distances from center can be shoved
+  hasTargetPiece = hasTargetPiece.filter((pos) => distance(pos) > distance(sourcePosition));
+
+  let shoves = hasTargetPiece.map( (targetPosition) => new Shove(
         sourcePosition, 
         targetPosition, 
         piece!, 
-        targetPiece
   )); 
-  return swaps
-}
 
+  return shoves
+}
 function generateMoves(game : GameState, position : Position) : Array<Action> { 
   let moves : Array<Action> = []; 
   let piece = game.getPiece(position);
@@ -86,5 +99,11 @@ function generateRotations(game : GameState, position : Position) : Array<Action
 
   let rotations = directions.map((direction) => new Rotation(position, direction, piece!));
   return rotations;
+}
+
+function generateNullMove(game : GameState, position : Position) : Array<Action>{
+  let piece = game.getPiece(position);
+  if (piece.getType() !== "queen") return [new NullMove(position, position, piece)];
+  return [];
 }
 

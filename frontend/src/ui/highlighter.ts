@@ -2,7 +2,7 @@ import { BOARD_SIZE } from '../constants';
 import type { Direction} from "../utils/spatial";
 import { MoveSelector } from "./moveSelector";
 import { Position } from "../utils/spatial";
-import { Rotation, Action} from "../action/action";
+import { Rotation, Action, NullMove} from "../action/action";
 import { GameState } from '../game/state';  
 import {Transition} from "../transition/transition";
 export type Highlight = "none" | "main" | "secondary";
@@ -44,8 +44,8 @@ export class Highlighter {
 
     const actionActivated = (action : Action) => (
         action.from().equals(selectedSquare) && // Action is from the selected square
-        action.to().equals(newPosition) && // Action is to the clicked square
-        !action.to().equals(action.from()) // Action does not start and end on the same square
+        action.to().equals(newPosition) //&& // Action is to the clicked square
+        //!action.to().equals(action.from()) // Action does not start and end on the same square
     );
 
     
@@ -99,7 +99,7 @@ export class Highlighter {
     }
 
     // Queue the rotation
-    let action = new Rotation(
+    let action : Action = new Rotation(
       this.moveSelector.getSelectedSquare()!,
       newDirection,
       selectedPiece
@@ -107,9 +107,12 @@ export class Highlighter {
 
     if (originalDirection.equals(newDirection)) {
       // If the rotation is the same as the original, then unselect
-      console.log(".. Unselect");
-      this.unselect();
-      return false;
+      action = new NullMove(
+        this.moveSelector.getSelectedSquare()!,
+        this.moveSelector.getSelectedSquare()!,
+        selectedPiece,
+      );
+
     }
 
     this.moveSelector.queueOne(action);

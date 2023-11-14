@@ -95,6 +95,72 @@ export class Move implements Action {
     newBoard.clearPiece(this.fromPosition);
     return newBoard;
   }
+
+  matchPlayer(player : Player): boolean{
+    return this.piece.getColor() as Player == player;
+  }
+}
+
+// Represent the Qi and Shoving mechanic 
+export class Shove implements Action {
+  constructor(
+    private fromPosition : Position, 
+    private toPosition : Position, 
+    private piece : PieceDescriptor
+  ) {}
+
+  transformedPiece() : PieceDescriptor {
+    return this.piece;
+  }
+
+  from() : Position {
+    return this.fromPosition;
+  }
+
+  to() : Position {
+    return this.toPosition;
+  }
+
+  toString() : string {
+    return this.fromPosition.toString() + this.toPosition.toString();
+  }
+
+
+  static fromString(actionString : string, piece : PieceDescriptor) : Shove {
+    let regex = /^([a-zA-Z]+)([0-9]+)([a-zA-Z]+)([0-9]+)$/;
+    let match = actionString.match(regex);
+    if (match === null) {
+      throw new Error("Invalid Shove string");
+    }
+
+    let fromPosition = Position.fromString(match[1]! + match[2]!);
+    let toPosition = Position.fromString(match[3]! + match[4]!);
+
+    return new Shove(fromPosition, toPosition, piece);
+  }
+
+  isValid() : boolean {
+    let isAdjacent = this.fromPosition.isAdjacentTo(this.toPosition);
+    let isDistinct = !this.fromPosition.equals(this.toPosition);
+    return isDistinct && isAdjacent;
+  }
+
+  appliedTo(board : Board ) : Board {
+    let newBoard = board; 
+    let shovedPiece = newBoard.getPiece(this.toPosition);
+    let dx = this.toPosition.getX() - this.fromPosition.getX();
+    let dy = this.toPosition.getY() - this.fromPosition.getY();
+    let newShovedPosition = new Position(this.toPosition.getX() + dx, this.toPosition.getY() + dy);
+    if (newShovedPosition.isWithinBounds()) {
+      if (newBoard.getPiece(newShovedPosition).isEmpty()) {
+        newBoard.setPiece(newShovedPosition, shovedPiece);
+      }
+    }
+    newBoard.setPiece(this.toPosition, this.piece);
+    newBoard.clearPiece(this.fromPosition);
+    return newBoard;
+  }
+
   matchPlayer(player : Player): boolean{
     return this.piece.getColor() as Player == player;
   }
@@ -161,18 +227,16 @@ export class Rotation implements Action {
   }
 }
 
-// Represents the swap action, that is, moving a piece from one position to another, but 
-// there is a piece at the destination position
-export class Swap implements Action {
+// Represents the Null Move action, that is, when the queen does absolutely nothing
+export class NullMove implements Action {
   constructor(
     private fromPosition : Position, 
     private toPosition : Position, 
-    private sourcePiece : PieceDescriptor,
-    private targetPiece : PieceDescriptor
+    private piece : PieceDescriptor
   ) {}
 
   transformedPiece() : PieceDescriptor {
-    return this.sourcePiece;
+    return this.piece;
   }
 
   from() : Position {
@@ -188,7 +252,7 @@ export class Swap implements Action {
   }
 
 
-  static fromString(actionString : string, sourcePiece : PieceDescriptor, targetPiece: PieceDescriptor) : Swap {
+  static fromString(actionString : string, piece : PieceDescriptor) : NullMove {
     let regex = /^([a-zA-Z]+)([0-9]+)([a-zA-Z]+)([0-9]+)$/;
     let match = actionString.match(regex);
     if (match === null) {
@@ -198,68 +262,16 @@ export class Swap implements Action {
     let fromPosition = Position.fromString(match[1]! + match[2]!);
     let toPosition = Position.fromString(match[3]! + match[4]!);
 
-    return new Swap(fromPosition, toPosition, sourcePiece, targetPiece); 
+    return new NullMove(fromPosition, toPosition, piece);
   }
 
   isValid() : boolean {
-    let isAdjacent = this.fromPosition.isAdjacentTo(this.toPosition);
-    let isDistinct = !this.fromPosition.equals(this.toPosition);
-    return isDistinct && isAdjacent;
+    let isTheSame = this.fromPosition.equals(this.toPosition);
+    return isTheSame;
   }
 
   appliedTo(board : Board ) : Board {
-    board.setPiece(this.toPosition, this.sourcePiece);
-    board.setPiece(this.fromPosition, this.targetPiece);
     return board;
-  }
-
-  matchPlayer(player : Player): boolean{
-    return this.sourcePiece.getColor() as Player == player;
-  }
-}
-
-// Represents the zap action, that is, from a given position and piece 
-// a laser keeps moving in a straight line until it hits/reflects off another piece or
-// hits the board edge
-export class Zap implements Action {
-  constructor(
-    private initialPosition : Position, 
-    private piece : PieceDescriptor,
-  ) {}
-
-  transformedPiece() : PieceDescriptor {
-    return this.piece;
-  }
-
-  from() : Position {
-    return this.initialPosition;
-  }
-
-  to() : Position {
-    return this.initialPosition;
-  }
-
-  toString() : string {
-    throw new Error("Zaps have no standard representation as a FEN string yet");
-  }
-
-  static fromString() : Swap {
-    throw new Error("Zaps have no standard representation as a FEN string yet");
-  }
-
-  isValid() : boolean {
-    return this.initialPosition.isWithinBounds();
-  }
-
-  appliedTo(board : Board ) : Board {
-    let laser = new Laser(this.initialPosition, this.piece.getDirection());
-    let newBoard = board;
-    let lastPosition = laser.getFinalPosition(board)
-    if (lastPosition === null) {
-      return newBoard;
-    }
-    newBoard.clearPiece(lastPosition)
-    return newBoard;
   }
 
   matchPlayer(player : Player): boolean{

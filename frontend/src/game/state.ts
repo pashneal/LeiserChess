@@ -157,7 +157,7 @@ export class GameState {
   commitAction(action : Action) {
     console.log("Action commited!")
     if (!this.isLegalAction(action)) {
-      throw new Error("The selected action is not legal " +  JSON.stringify(action));
+      throw new Error("--The selected action is not legal " +  JSON.stringify(action));
     }
 
     this.tryAction(action);
