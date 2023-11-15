@@ -110,7 +110,6 @@ export class GameState {
       let laser = new Laser(queenPosition!, queen!.getDirection());
       lasers.push(laser);
     }
-    console.log(lasers);
     return lasers;
   }
 
@@ -164,7 +163,6 @@ export class GameState {
     this.fireLasers(this.currentPlayer);
     this.fenHistory.push(this.board.toFEN());
     this.currentPlayer = this.currentPlayer === "light" ? "dark" : "light";
-    console.log(this);
   }
 
   getLasers(): QueenLasers {
@@ -212,7 +210,6 @@ export class GameState {
     this.currentPlayer = boardNumber % 2 === 0 ? "light" : "dark";
     this.fenHistory = this.fenHistory.slice(0, boardNumber + 1);
     this.actionHistory = this.actionHistory.slice(0, moveNumber + 1);
-    console.log(this);
     return true;
   }
 

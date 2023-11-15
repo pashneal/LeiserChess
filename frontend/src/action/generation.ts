@@ -17,6 +17,7 @@ export function generateActions( game : GameState, position : Position) : Array<
   actions = actions.concat(shoves);
   actions = actions.concat(nullMove);
 
+  console.log("before purge", actions);
   // All actions must lead to legal game states
   actions = actions.filter((action) => game.isLegalAction(action))  
 
@@ -60,9 +61,12 @@ function generateShoves(game : GameState, sourcePosition : Position) : Array<Act
     let [cx, cy] = [3.5, 3.5];
     return (x-cx)**2 + (y-cy)**2;
   }
-
-  // only strictly increasing distances from center can be shoved
-  hasTargetPiece = hasTargetPiece.filter((pos) => distance(pos) > distance(sourcePosition));
+  
+  // Queen can shove anything
+  if (game.getPiece(sourcePosition).getType() !== "queen") {
+    // only strictly increasing distances from center can be shoved
+    hasTargetPiece = hasTargetPiece.filter((pos) => distance(pos) > distance(sourcePosition));
+  }
 
   let shoves = hasTargetPiece.map( (targetPosition) => new Shove(
         sourcePosition, 
@@ -72,6 +76,7 @@ function generateShoves(game : GameState, sourcePosition : Position) : Array<Act
 
   return shoves
 }
+
 function generateMoves(game : GameState, position : Position) : Array<Action> { 
   let moves : Array<Action> = []; 
   let piece = game.getPiece(position);
@@ -103,7 +108,8 @@ function generateRotations(game : GameState, position : Position) : Array<Action
 
 function generateNullMove(game : GameState, position : Position) : Array<Action>{
   let piece = game.getPiece(position);
-  if (piece.getType() !== "queen") return [new NullMove(position, position, piece)];
+  if (piece.isEmpty()) { return []; }
+  if (piece.getType() == "queen") return [new NullMove(position, position, piece)];
   return [];
 }
 

@@ -86,9 +86,9 @@ export class Laser {
     }
     let [x, y] = path[0]!.toArray();
     const gradient = context.createLinearGradient(0,0,canvas.width, canvas.height);
-    gradient.addColorStop(0, "magenta");
-    gradient.addColorStop(0.5, "blue");
-    gradient.addColorStop(1.0, "red");
+    gradient.addColorStop(0, "purple");
+    //gradient.addColorStop(0.5, "");
+    gradient.addColorStop(1.0, "orange");
     context.strokeStyle = gradient;
     context.lineWidth = LASER_WIDTH;
 

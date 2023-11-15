@@ -1,6 +1,6 @@
 <script>
   import Board from "./Board.svelte";
-  import { commitState , undoAction} from "../store.js";
+  import { commitState , undoAction, canCommit} from "../store.js";
   import MoveHistory from "./MoveHistory.svelte"; 
 </script>
 
@@ -17,7 +17,7 @@
   </div>
 </div>
 
-<button on:click={() => commitState()}>Commit</button>
+<button on:click={() => commitState()} disabled= '{!$canCommit}'>Commit</button>
 <button on:click={() => undoAction()}>Undo</button>
 <style>
 
@@ -39,6 +39,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    user-select: none;   
   }
 
   #moveHistory {

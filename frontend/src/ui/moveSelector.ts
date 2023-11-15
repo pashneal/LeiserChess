@@ -55,6 +55,11 @@ export class MoveSelector {
     this.deselectSquare();
   }
 
+  canCommit(): boolean {
+    if (this.actionQueue === null) return false;
+    return this.game.isLegalAction(this.actionQueue!);
+  }
+
   selectSquare(position : Position) {
 
     if (this.selectedSquare != null) {
@@ -63,13 +68,6 @@ export class MoveSelector {
     this.selectedSquare = position;
     this.selectedPiece = this.game.getPiece(position);
 
-    // Only allow pieces to be selected that match the color
-    if (!this.selectedPiece.isEmpty()) {
-      if (this.selectedPiece.getColor() as Player !== this.game.getCurrentPlayer()){
-        this.selectedPiece = null;
-        this.selectedSquare = null;
-      }
-    }
   }
 
   deselectSquare() {
@@ -94,6 +92,12 @@ export class MoveSelector {
 
   getPossibleActions () : Action[] {
     if (this.selectedSquare === null) { return []; }
+    // If the piece doesn't match the color,return no actions 
+    if (!this.selectedPiece!.isEmpty()) {
+      if (this.selectedPiece!.getColor() as Player !== this.game.getCurrentPlayer()){
+        return [];
+      }
+    }
     let actions = generateActions(this.game, this.selectedSquare);
     return actions;
   }

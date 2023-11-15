@@ -41,6 +41,11 @@ export let lasers = derived(
   ($highlighter) => $highlighter.getGameState().getLasers()
 );
 
+export let canCommit = derived(
+  highlighter, 
+  ($highlighter) => $highlighter.canCommit()
+);
+
 export function interactWithSquare(row, col) {
   let x = col;
   let y = row;
@@ -57,6 +62,7 @@ export function undoAction() {
     return value
   })
 }
+
 
 export function commitState() {
   highlighter.update((value) => {

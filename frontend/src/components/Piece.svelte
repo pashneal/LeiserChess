@@ -52,13 +52,13 @@
   }
 
   .light {
-    color: red;
-    fill: red;
+    color: orange;
+    fill: orange;
   }
 
   .dark {
-    color: blue;
-    fill: blue;
+    color: purple;
+    fill: purple;
   }
 
   

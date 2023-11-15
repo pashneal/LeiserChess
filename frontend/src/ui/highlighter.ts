@@ -38,14 +38,18 @@ export class Highlighter {
     });
   }
 
+  canCommit() : boolean {
+    return this.moveSelector.canCommit();
+  }
+
   interactWithSquare( newPosition : Position) {
     // Do nothing if the square is empty
     let selectedSquare = this.moveSelector.getSelectedSquare();
 
-    const actionActivated = (action : Action) => (
+    const movementAction = (action : Action) => (
         action.from().equals(selectedSquare) && // Action is from the selected square
-        action.to().equals(newPosition) //&& // Action is to the clicked square
-        //!action.to().equals(action.from()) // Action does not start and end on the same square
+        action.to().equals(newPosition) &&// Action is to the clicked square
+        action.from() != action.to() // Action is not a rotation or null move
     );
 
     
@@ -53,71 +57,99 @@ export class Highlighter {
       // No square selected yet
       // => select one
       console.log("Select");
+      // Only select if the color is correct
       this.moveSelector.selectSquare(newPosition);
       this.lastQueuedDirection = null;
+      selectedSquare = newPosition;
+    } 
 
-    } else if (newPosition.equals(selectedSquare)) {
-      // Square is already selected, 
-      // but same square selected again
+    let rotated = false;
+    let possibleActions = this.moveSelector.getPossibleActions();
+    let queuedAction = null;
+
+    if (newPosition.equals(selectedSquare)) {
+      // Square is newly selected, 
+      // or same square selected again
       // => attempt to rotate the currently selected square
-      console.log("Try Rotate");
-      this.tryRotateCW();
+      console.log("Same square");
+      queuedAction = this.sameSquare();
+    } 
 
-    } else if ( this.moveSelector.getPossibleActions().some( actionActivated )) {
-      // A legal action is activated 
+    if ( possibleActions.some(movementAction)) {
+      // A legal action that traverses squares action is activated 
       // Find the legal action
       // => queue said legal action
-      let action = this.moveSelector.getPossibleActions().find( actionActivated )!;
-      this.moveSelector.queueOne(action);
+      console.log("Action activated");
+      queuedAction = possibleActions.find( movementAction )!;
+      // Reset rotation
       this.lastQueuedDirection = null;
 
-    } else {
-      // There are no legal actions activated, so unselect
-      console.log("Unselect");
+    } 
+
+
+    if (queuedAction !== null && this.getGameState().isLegalAction(queuedAction)) {
+      console.log("Queued legal action");
+      this.moveSelector.queueOne(queuedAction);
+    } 
+
+    if (queuedAction === null && !newPosition.equals(selectedSquare)) {
       this.unselect();
-      this.lastQueuedDirection = null;
-    }
+    } 
+
+
+      
     this.updateHighlightedSquares();
   }
 
   // Extend the state machine to keep track of the last rotation
-  private tryRotateCW() : boolean {
+  private sameSquare() : Action | null {
     let selectedPiece = this.moveSelector.getSelectedPiece();
     if (selectedPiece === null) {
-      return false; // No piece selected to rotate, so do nothing
+      return null; // No piece selected, so do nothing
     }
+    if (selectedPiece.isEmpty()) {
+      return null; // Empty piece selected, so do nothing
+    }
+
+    let selectedSquare = this.moveSelector.getSelectedSquare()!;
 
     let originalDirection = selectedPiece.getDirection();
     let newDirection : Direction; 
+    let action : Action | null= null;
 
+    action = new NullMove(
+      selectedSquare,
+      selectedSquare,
+      selectedPiece
+    );
     if (this.lastQueuedDirection === null) {
       // No rotation queued yet, so queue default
-      newDirection = originalDirection.rotatedClockwise();
+      newDirection = originalDirection;
     } else {
       // Otherwise, Rotate the last queued rotation
       newDirection = this.lastQueuedDirection.rotatedClockwise();
-    }
-
-    // Queue the rotation
-    let action : Action = new Rotation(
-      this.moveSelector.getSelectedSquare()!,
-      newDirection,
-      selectedPiece
-    );
-
-    if (originalDirection.equals(newDirection)) {
-      // If the rotation is the same as the original, then unselect
-      action = new NullMove(
+      // Queue the rotation
+      action = new Rotation(
         this.moveSelector.getSelectedSquare()!,
-        this.moveSelector.getSelectedSquare()!,
-        selectedPiece,
+        newDirection,
+        selectedPiece
       );
-
     }
 
-    this.moveSelector.queueOne(action);
+
+
     this.lastQueuedDirection = newDirection;
-    return true;
+    let isValid = (action : any) =>  (action !== null && action.isValid());
+    let isPossible = (action : any) => (this.moveSelector.getPossibleActions().some((a) => a.equals(action)));
+    let isLegal = (action : any) => (isValid(action) && isPossible(action));
+
+    if (!isLegal(action)) { 
+      if (this.canCommit()) {
+        this.moveSelector.dequeue();
+      }
+      return null 
+    }
+    return action;
 
   }
 

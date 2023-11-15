@@ -42,6 +42,8 @@ export interface Action {
    * @return true if the player matches the one moved by this action
    */
   matchPlayer( player : Player) : boolean  
+
+  equals(action : Action) : boolean
 }
 
 // Represents the move action, that is, moving a piece from one position to another
@@ -67,6 +69,10 @@ export class Move implements Action {
 
   toString() : string {
     return this.fromPosition.toString() + this.toPosition.toString();
+  }
+
+  equals(action : Action) : boolean {
+    return this.toString() === action.toString();
   }
 
 
@@ -109,6 +115,9 @@ export class Shove implements Action {
     private piece : PieceDescriptor
   ) {}
 
+  equals(action : Action) : boolean {
+    return this.toString() === action.toString();
+  }
   transformedPiece() : PieceDescriptor {
     return this.piece;
   }
@@ -170,6 +179,9 @@ export class Shove implements Action {
 // Represents the rotation action, that is, rotating a piece in place
 export class Rotation implements Action {
   constructor(private fromPosition: Position, private newDirection : Direction, private piece : PieceDescriptor) {}
+  equals(action : Action) : boolean {
+    return this.toString() === action.toString();
+  }
 
   static fromString(actionString : string, piece : PieceDescriptor) : Rotation {
     let regex = /^([a-zA-Z]+)([0-9]+)(U|L|R)$/;
@@ -235,6 +247,9 @@ export class NullMove implements Action {
     private piece : PieceDescriptor
   ) {}
 
+  equals(action : Action) : boolean {
+    return this.toString() === action.toString();
+  }
   transformedPiece() : PieceDescriptor {
     return this.piece;
   }
