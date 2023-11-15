@@ -1,5 +1,6 @@
-# LeiserChess
+# LeiserChess for Chrome 
 Implementation of Lieserchess 2023 using Typescript and Svelte
+Note: only works on Chrome, and only tested on Chrome.
 
 # Launch
 To launch, under `frontend/` run
