@@ -2,12 +2,13 @@
 Implementation of Lieserchess 2023 using Typescript and Svelte
 
 # Launch
-To launch, run
+To launch, under `frontend/` run
 ```
   npm install
   npm run dev
-  Go to the provided url! (usually localhost:8080)
 ```
+Go to the provided url! (usually localhost:8080)
+
 
 # Instructions 
 To move a piece, click on the square then an adjacent square, then click Commit
