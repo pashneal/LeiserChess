@@ -1,5 +1,11 @@
+pub mod grid;
+pub mod piece;
+
+pub use grid::*;
+pub use piece::*;
+
 use thiserror::Error;
-use crate::action::Action;
+pub use crate::action::Action;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -28,9 +34,35 @@ pub trait OptimizedBoard {
     fn apply_action_unchecked(&mut self, action : &impl Action);
 }
 
-pub trait ParseableBoard : OptimizedBoard {
+pub trait Parseable {
+    /// Given a FEN string, create a new board
     fn from_fen(fen : &str) -> Self;
+
+    /// Convert the current board to a FEN string
     fn to_fen(&self) -> String;
+}
+
+pub trait HumanReadable : OptimizedBoard + Parseable {
+    /// Converts a board to a human readable format,
+    /// where . represents an empty square
+    /// and the pieces are represented by their FEN notation
+    fn human_readable(&self) -> String {
+        let fen = self.to_fen();
+        let mut result = String::new();
+        for c in fen.chars() {
+            if c == '/' {
+                result.push('\n');
+            } else if c.is_numeric() {
+                let n = c.to_digit(10).unwrap();
+                for _ in 0..n {
+                    result.push('.');
+                }
+            } else {
+                result.push(c);
+            }
+        }
+        result
+    }
 }
 
 pub trait Indexable : OptimizedIndexable {
