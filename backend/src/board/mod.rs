@@ -42,8 +42,8 @@ pub trait Parseable {
     fn to_fen(&self) -> String;
 }
 
-pub trait HumanReadable : OptimizedBoard + Parseable {
-    /// Converts a board to a human readable format,
+pub trait HumanReadable : Parseable {
+    /// Converts a parsable object to a human readable format,
     /// where . represents an empty square
     /// and the pieces are represented by their FEN notation
     fn human_readable(&self) -> String {
@@ -55,7 +55,7 @@ pub trait HumanReadable : OptimizedBoard + Parseable {
             } else if c.is_numeric() {
                 let n = c.to_digit(10).unwrap();
                 for _ in 0..n {
-                    result.push('.');
+                    result.push_str(" .");
                 }
             } else {
                 result.push(c);

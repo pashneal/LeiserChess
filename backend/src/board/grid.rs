@@ -6,6 +6,8 @@ pub struct Grid {
     squares : [[Option<StandardPiece>; 8]; 8]
 }
 
+impl HumanReadable for Grid {}
+
 impl Parseable for Grid {
     fn from_fen(fen : &str) -> Self {
         let mut grid = Grid { squares : [[None; 8]; 8] };
@@ -83,6 +85,17 @@ pub mod grid_tests {
     pub fn fen_parsing() {
         let opening_position  = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS";
         let grid = Grid::from_fen(opening_position);
+        println!("{}", grid.human_readable());
         assert_eq!(grid.to_fen(), opening_position);
     }
+
+    #[test]
+    pub fn parses_current_player() {
+        let opening_position  = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS B";
+        let gridw = Grid::from_fen(opening_position);
+        let opening_position  = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS W";
+        let gridb = Grid::from_fen(opening_position);
+        assert_eq!(gridw.to_fen(), gridb.to_fen());
+    }
+
 }
