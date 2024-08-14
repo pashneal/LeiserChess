@@ -1,5 +1,10 @@
-use super::*;
 use crate::parser::*;
+use super::*;
+
+pub struct Position {
+    x: usize,
+    y: usize,
+}
 
 #[derive(Clone, Debug)]
 pub struct Grid {
@@ -7,6 +12,53 @@ pub struct Grid {
 }
 
 impl HumanReadable for Grid {}
+
+impl Indexable for Grid {
+    fn validate_position(&self, position: &Position) -> Result<(), Error> {
+        if position.x > 7 || position.y > 7 {
+            return Err(Error::InvalidPosition);
+        }
+        Ok(())
+    }
+
+    fn validate_piece(&self, piece: &StandardPiece) -> Result<(), Error> {
+        match piece.kind {
+            Kind::Monarch => {
+                match piece.direction {
+                    Direction::Orthogonal(_) => { Ok(()) }
+                    _ => { Err(Error::InvalidPiece) }
+                }
+            }
+            Kind::Pawn => {
+                match piece.direction {
+                    Direction::Diagonal(_) => { Ok(()) }
+                    _ => { Err(Error::InvalidPiece) }
+                }
+            }
+        }
+    }
+}
+
+impl OptimizedIndexable for Grid {
+
+    type Piece = StandardPiece;
+    type Position = Position;
+
+    fn get_unchecked(&self, position: &Position) -> Option<StandardPiece> {
+        let Position { x, y } = *position;
+        self.squares[y][x]
+    }
+
+    fn set_unchecked(&mut self, position: &Position, piece: StandardPiece) {
+        let Position { x, y } = *position;
+        self.squares[y][x] = Some(piece);
+    }
+
+    fn remove_unchecked(&mut self, position: &Position) {
+        let Position { x, y } = *position;
+        self.squares[y][x] = None;
+    }
+}
 
 impl Parseable for Grid {
     fn from_fen(fen: &str) -> Self {

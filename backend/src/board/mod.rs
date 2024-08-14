@@ -11,6 +11,10 @@ use thiserror::Error;
 pub enum Error {
     #[error("Invalid move")]
     MoveError,
+    #[error("Invalid position")]
+    InvalidPosition,
+    #[error("Invalid piece")]
+    InvalidPiece,
 }
 
 pub trait Board: OptimizedBoard + Clone {
@@ -24,8 +28,10 @@ pub trait Board: OptimizedBoard + Clone {
     /// perform checks to ensure validity of the board
     fn apply_action(&mut self, action: &impl Action) -> Result<(), Error> {
         self.validate_board()?;
+
+        let old_board = self.clone();
         self.apply_action_unchecked(action);
-        self.validate_difference(&self.clone())?;
+        self.validate_difference(&old_board)?;
         Ok(())
     }
 }
