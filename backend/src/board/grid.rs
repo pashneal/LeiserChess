@@ -1,5 +1,5 @@
-use crate::parser::*;
 use super::*;
+use crate::parser::*;
 
 pub struct Position {
     x: usize,
@@ -23,15 +23,14 @@ impl Indexable for Grid {
 
     fn validate_piece(&self, piece: &StandardPiece) -> Result<(), Error> {
         match (piece.kind, piece.direction) {
-            (Kind::Monarch , Direction::Orthogonal(_)) => { Ok(()) }
-            (Kind::Pawn, Direction::Diagonal(_)) => { Ok(()) }
-            _ => { Err(Error::InvalidPiece) }
+            (Kind::Monarch, Direction::Orthogonal(_)) => Ok(()),
+            (Kind::Pawn, Direction::Diagonal(_)) => Ok(()),
+            _ => Err(Error::InvalidPiece),
         }
     }
 }
 
 impl OptimizedIndexable for Grid {
-
     type Piece = StandardPiece;
     type Position = Position;
 
@@ -140,5 +139,29 @@ pub mod grid_tests {
         let opening_position = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS W";
         let gridb = Grid::from_fen(opening_position);
         assert_eq!(gridw.to_fen(), gridb.to_fen());
+    }
+
+    #[test]
+    pub fn piece_validation() {
+        let grid = Grid {
+            squares: [[None; 8]; 8],
+        };
+        assert!(matches!(
+            grid.validate_piece(&StandardPiece {
+                color: Color::White,
+                kind: Kind::Pawn,
+                direction: Direction::Orthogonal(Orthogonal::North),
+            }),
+            Err(_)
+        ));
+
+        assert!(matches!(
+            grid.validate_piece(&StandardPiece {
+                color: Color::Black,
+                kind: Kind::Monarch,
+                direction: Direction::Diagonal(Diagonal::NorthEast),
+            }),
+            Err(_)
+        ));
     }
 }
