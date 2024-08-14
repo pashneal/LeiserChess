@@ -41,7 +41,7 @@ pub struct StandardPiece {
 }
 
 impl Parseable for StandardPiece {
-    fn from_fen(notation: &str) -> StandardPiece {
+    fn from_str(notation: &str) -> StandardPiece {
         match notation {
             "NN" => StandardPiece {
                 color: Color::White,
@@ -127,7 +127,7 @@ impl Parseable for StandardPiece {
         }
     }
 
-    fn to_fen(&self) -> String {
+    fn to_string(&self) -> String {
         match self {
             &StandardPiece {
                 color: Color::White,

@@ -42,10 +42,10 @@ pub trait OptimizedBoard {
 
 pub trait Parseable {
     /// Given a FEN string, create a new board
-    fn from_fen(fen: &str) -> Self;
+    fn from_str(fen: &str) -> Self;
 
     /// Convert the current board to a FEN string
-    fn to_fen(&self) -> String;
+    fn to_string(&self) -> String;
 }
 
 pub trait HumanReadable: Parseable {
@@ -53,7 +53,7 @@ pub trait HumanReadable: Parseable {
     /// where . represents an empty square
     /// and the pieces are represented by their FEN notation
     fn human_readable(&self) -> String {
-        let fen = self.to_fen();
+        let fen = self.to_string();
         let mut result = String::new();
         for c in fen.chars() {
             if c == '/' {

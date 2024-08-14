@@ -1,5 +1,5 @@
-use super::*;
 use crate::parser::*;
+use super::*;
 
 pub struct Position {
     x: usize,
@@ -23,14 +23,15 @@ impl Indexable for Grid {
 
     fn validate_piece(&self, piece: &StandardPiece) -> Result<(), Error> {
         match (piece.kind, piece.direction) {
-            (Kind::Monarch, Direction::Orthogonal(_)) => Ok(()),
-            (Kind::Pawn, Direction::Diagonal(_)) => Ok(()),
-            _ => Err(Error::InvalidPiece),
+            (Kind::Monarch , Direction::Orthogonal(_)) => { Ok(()) }
+            (Kind::Pawn, Direction::Diagonal(_)) => { Ok(()) }
+            _ => { Err(Error::InvalidPiece) }
         }
     }
 }
 
 impl OptimizedIndexable for Grid {
+
     type Piece = StandardPiece;
     type Position = Position;
 
@@ -51,7 +52,7 @@ impl OptimizedIndexable for Grid {
 }
 
 impl Parseable for Grid {
-    fn from_fen(fen: &str) -> Self {
+    fn from_str(fen: &str) -> Self {
         let mut grid = Grid {
             squares: [[None; 8]; 8],
         };
@@ -61,7 +62,7 @@ impl Parseable for Grid {
         while fen.len() > 0 {
             let (piece, rest) = parse_piece_fen(&fen);
             if let Some(piece) = piece {
-                grid.squares[y][x] = Some(StandardPiece::from_fen(piece));
+                grid.squares[y][x] = Some(StandardPiece::from_str(piece));
                 x += 1;
                 fen = rest;
                 continue;
@@ -95,7 +96,7 @@ impl Parseable for Grid {
         grid
     }
 
-    fn to_fen(&self) -> String {
+    fn to_string(&self) -> String {
         let mut result = String::new();
         for row in self.squares.iter() {
             let mut empty = 0;
@@ -106,7 +107,7 @@ impl Parseable for Grid {
                             result.push_str(&empty.to_string());
                             empty = 0;
                         }
-                        result.push_str(&piece.to_fen());
+                        result.push_str(&piece.to_string());
                     }
                     None => empty += 1,
                 }
@@ -127,41 +128,38 @@ pub mod grid_tests {
     #[test]
     pub fn fen_parsing() {
         let opening_position = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS";
-        let grid = Grid::from_fen(opening_position);
+        let grid = Grid::from_str(opening_position);
         println!("{}", grid.human_readable());
-        assert_eq!(grid.to_fen(), opening_position);
+        assert_eq!(grid.to_string(), opening_position);
     }
 
     #[test]
     pub fn parses_current_player() {
         let opening_position = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS B";
-        let gridw = Grid::from_fen(opening_position);
+        let gridw = Grid::from_str(opening_position);
         let opening_position = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS W";
-        let gridb = Grid::from_fen(opening_position);
-        assert_eq!(gridw.to_fen(), gridb.to_fen());
+        let gridb = Grid::from_str(opening_position);
+        assert_eq!(gridw.to_string(), gridb.to_string());
     }
+
 
     #[test]
     pub fn piece_validation() {
         let grid = Grid {
             squares: [[None; 8]; 8],
         };
-        assert!(matches!(
-            grid.validate_piece(&StandardPiece {
-                color: Color::White,
-                kind: Kind::Pawn,
-                direction: Direction::Orthogonal(Orthogonal::North),
-            }),
-            Err(_)
-        ));
+        assert!(matches!(grid.validate_piece(&StandardPiece {
+            color: Color::White,
+            kind: Kind::Pawn,
+            direction: Direction::Orthogonal(Orthogonal::North),
+        }), Err(_)));
 
-        assert!(matches!(
-            grid.validate_piece(&StandardPiece {
-                color: Color::Black,
-                kind: Kind::Monarch,
-                direction: Direction::Diagonal(Diagonal::NorthEast),
-            }),
-            Err(_)
-        ));
+        assert!(matches!(grid.validate_piece(&StandardPiece {
+            color: Color::Black,
+            kind: Kind::Monarch,
+            direction: Direction::Diagonal(Diagonal::NorthEast),
+        }), Err(_)));
     }
+
 }
+
