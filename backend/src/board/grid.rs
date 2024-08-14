@@ -22,19 +22,10 @@ impl Indexable for Grid {
     }
 
     fn validate_piece(&self, piece: &StandardPiece) -> Result<(), Error> {
-        match piece.kind {
-            Kind::Monarch => {
-                match piece.direction {
-                    Direction::Orthogonal(_) => { Ok(()) }
-                    _ => { Err(Error::InvalidPiece) }
-                }
-            }
-            Kind::Pawn => {
-                match piece.direction {
-                    Direction::Diagonal(_) => { Ok(()) }
-                    _ => { Err(Error::InvalidPiece) }
-                }
-            }
+        match (piece.kind, piece.direction) {
+            (Kind::Monarch , Direction::Orthogonal(_)) => { Ok(()) }
+            (Kind::Pawn, Direction::Diagonal(_)) => { Ok(()) }
+            _ => { Err(Error::InvalidPiece) }
         }
     }
 }
