@@ -1,6 +1,7 @@
 use crate::parser::*;
 use super::*;
 use regex::Regex;
+use crate::constants::*;
 
 pub struct GridPosition {
     x: usize,
@@ -24,25 +25,33 @@ impl Parseable for GridPosition {
 }
 
 #[derive(Clone, Debug)]
-pub struct Grid {
+pub struct LeiserChessGrid {
     squares: [[Option<StandardPiece>; 8]; 8],
 }
 
-impl Board for Grid {
+impl Board for LeiserChessGrid {
     fn validate_board(&self) -> Result<(), Error> {
+        let mut count = 0;
         for row in self.squares.iter() {
             for square in row.iter() {
                 if let Some(piece) = square {
                     self.validate_piece(piece)?;
+                    count += 1;
                 }
             }
+        }
+        if count == 0 {
+            return Err(Error::InvalidBoard("No pieces on the board".to_string()));
+        }
+        if count > MAX_PIECES {
+            return Err(Error::InvalidBoard("Too many pieces on the board".to_string()));
         }
         Ok(())
     }
 }
-impl HumanReadable for Grid {}
+impl HumanReadable for LeiserChessGrid {}
 
-impl Indexable for Grid {
+impl Indexable for LeiserChessGrid {
     fn validate_position(&self, position: &GridPosition) -> Result<(), Error> {
         if position.x > 7 || position.y > 7 {
             return Err(Error::InvalidPosition);
@@ -59,7 +68,7 @@ impl Indexable for Grid {
     }
 }
 
-impl OptimizedIndexable for Grid {
+impl OptimizedIndexable for LeiserChessGrid {
 
     type Piece = StandardPiece;
     type Position = GridPosition;
@@ -80,9 +89,9 @@ impl OptimizedIndexable for Grid {
     }
 }
 
-impl Parseable for Grid {
+impl Parseable for LeiserChessGrid {
     fn from_str(fen: &str) -> Self {
-        let mut grid = Grid {
+        let mut grid = LeiserChessGrid {
             squares: [[None; 8]; 8],
         };
         let mut fen = fen;
@@ -158,7 +167,7 @@ pub mod grid_tests {
     #[test]
     pub fn fen_parsing() {
         let opening_position = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS";
-        let grid = Grid::from_str(opening_position);
+        let grid = LeiserChessGrid::from_str(opening_position);
         println!("{}", grid.human_readable());
         assert_eq!(grid.to_string(), opening_position);
     }
@@ -166,16 +175,16 @@ pub mod grid_tests {
     #[test]
     pub fn parses_current_player() {
         let opening_position = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS B";
-        let gridw = Grid::from_str(opening_position);
+        let gridw = LeiserChessGrid::from_str(opening_position);
         let opening_position = "nn6nn/sesw1sesw1sesw/8/8/8/8/NENW1NENW1NENW/SS6SS W";
-        let gridb = Grid::from_str(opening_position);
+        let gridb = LeiserChessGrid::from_str(opening_position);
         assert_eq!(gridw.to_string(), gridb.to_string());
     }
 
 
     #[test]
     pub fn piece_validation() {
-        let grid = Grid {
+        let grid = LeiserChessGrid {
             squares: [[None; 8]; 8],
         };
         assert!(matches!(grid.validate_piece(&StandardPiece {

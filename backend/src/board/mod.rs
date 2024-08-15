@@ -11,6 +11,8 @@ use thiserror::Error;
 pub enum Error {
     #[error("Invalid move")]
     MoveError,
+    #[error("Invalid board : {0}")]
+    InvalidBoard(String),
     #[error("Invalid position")]
     InvalidPosition,
     #[error("Invalid piece")]

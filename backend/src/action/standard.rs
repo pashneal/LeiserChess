@@ -24,8 +24,8 @@ impl StandardAction {
     }
 }
 
-impl OptimizedAction <Grid> for StandardAction {
-    fn apply_unchecked(&self, board: &mut Grid) {
+impl OptimizedAction <LeiserChessGrid> for StandardAction {
+    fn apply_unchecked(&self, board: &mut LeiserChessGrid) {
         for victim in &self.victims {
             board.remove_unchecked(victim);
         }
