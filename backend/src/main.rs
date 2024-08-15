@@ -1,8 +1,8 @@
 mod action;
 mod board;
+mod constants;
 mod game;
 mod parser;
-mod constants;
 
 fn main() {
     println!("Hello, world!");

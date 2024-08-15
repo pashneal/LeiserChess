@@ -34,7 +34,7 @@ pub trait Parseable {
     fn to_string(&self) -> String;
 }
 
-pub trait HumanReadable: Parseable + Board{
+pub trait HumanReadable: Parseable + Board {
     /// Converts a parsable board to a human readable format,
     /// where . represents an empty square
     /// and the pieces are represented by their FEN notation

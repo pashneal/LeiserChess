@@ -1,7 +1,7 @@
-use crate::parser::*;
 use super::*;
-use regex::Regex;
 use crate::constants::*;
+use crate::parser::*;
+use regex::Regex;
 
 pub struct GridLocation {
     pub x: usize,
@@ -19,8 +19,8 @@ impl GridLocation {
 
     /// Qi of a location according to LeiserChess rules
     pub fn qi(&self) -> i32 {
-        let x = ( self.x * 2 ) as i32;
-        let y = ( self.y * 2 ) as i32;
+        let x = (self.x * 2) as i32;
+        let y = (self.y * 2) as i32;
         (x - 7) * (x - 7) + (y - 7) * (y - 7)
     }
 }
@@ -32,7 +32,7 @@ impl PartialEq for GridLocation {
 }
 
 impl Parseable for GridLocation {
-    fn from_str(fen : &str) -> Self {
+    fn from_str(fen: &str) -> Self {
         let re = Regex::new(r"([a-h])([1-8])").unwrap();
         let captures = re.captures(fen).unwrap();
         let x = captures.get(1).unwrap().as_str().chars().next().unwrap() as usize - 'a' as usize;
@@ -67,7 +67,9 @@ impl Board for LeiserChessGrid {
             return Err(Error::InvalidBoard("No pieces on the board".to_string()));
         }
         if count > MAX_PIECES {
-            return Err(Error::InvalidBoard("Too many pieces on the board".to_string()));
+            return Err(Error::InvalidBoard(
+                "Too many pieces on the board".to_string(),
+            ));
         }
         Ok(())
     }
@@ -84,15 +86,14 @@ impl Indexable for LeiserChessGrid {
 
     fn validate_piece(&self, piece: &StandardPiece) -> Result<(), Error> {
         match (piece.kind, piece.direction) {
-            (Kind::Monarch , Direction::Orthogonal(_)) => { Ok(()) }
-            (Kind::Pawn, Direction::Diagonal(_)) => { Ok(()) }
-            _ => { Err(Error::InvalidPiece) }
+            (Kind::Monarch, Direction::Orthogonal(_)) => Ok(()),
+            (Kind::Pawn, Direction::Diagonal(_)) => Ok(()),
+            _ => Err(Error::InvalidPiece),
         }
     }
 }
 
 impl OptimizedIndexable for LeiserChessGrid {
-
     type Piece = StandardPiece;
     type Location = GridLocation;
 
@@ -183,7 +184,6 @@ impl Parseable for LeiserChessGrid {
     }
 }
 
-
 #[cfg(test)]
 pub mod grid_tests {
     use super::*;
@@ -204,23 +204,28 @@ pub mod grid_tests {
         assert_eq!(gridw.to_string(), gridb.to_string());
     }
 
-
     #[test]
     pub fn piece_validation() {
         let grid = LeiserChessGrid {
             squares: [[None; 8]; 8],
         };
-        assert!(matches!(grid.validate_piece(&StandardPiece {
-            color: Color::White,
-            kind: Kind::Pawn,
-            direction: Direction::Orthogonal(Orthogonal::North),
-        }), Err(_)));
+        assert!(matches!(
+            grid.validate_piece(&StandardPiece {
+                color: Color::White,
+                kind: Kind::Pawn,
+                direction: Direction::Orthogonal(Orthogonal::North),
+            }),
+            Err(_)
+        ));
 
-        assert!(matches!(grid.validate_piece(&StandardPiece {
-            color: Color::Black,
-            kind: Kind::Monarch,
-            direction: Direction::Diagonal(Diagonal::NorthEast),
-        }), Err(_)));
+        assert!(matches!(
+            grid.validate_piece(&StandardPiece {
+                color: Color::Black,
+                kind: Kind::Monarch,
+                direction: Direction::Diagonal(Diagonal::NorthEast),
+            }),
+            Err(_)
+        ));
     }
 
     #[test]
@@ -230,6 +235,4 @@ pub mod grid_tests {
         let location = GridLocation::from_str("h8");
         assert_eq!(location.to_string(), "h8");
     }
-
 }
-

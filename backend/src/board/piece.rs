@@ -45,48 +45,44 @@ pub enum Direction {
 /// "R" - rotate old right by 90 degrees to get new
 /// "U" - rotate old by 180 degrees to get new
 /// "L" - rotate old left by 90 degrees to get new
-pub fn rotation_str(old: Direction, new: Direction) -> Result<&'static str, Error>{
-    use Direction::*;
-    use self::Orthogonal::*;
+pub fn rotation_str(old: Direction, new: Direction) -> Result<&'static str, Error> {
     use self::Diagonal::*;
+    use self::Orthogonal::*;
+    use Direction::*;
 
     match (old, new) {
         (Diagonal(_), Orthogonal(_)) => Err(Error::InvalidRotation(old, new)),
         (Orthogonal(_), Diagonal(_)) => Err(Error::InvalidRotation(old, new)),
-        (Orthogonal(a), Orthogonal(b)) => {
-            match (a, b) {
-                (North, East) => Ok("R"),
-                (North, South) => Ok("U"),
-                (North, West) => Ok("L"),
-                (East, South) => Ok("R"),
-                (East, West) => Ok("U"),
-                (East, North) => Ok("L"),
-                (South, West) => Ok("R"),
-                (South, North) => Ok("U"),
-                (South, East) => Ok("L"),
-                (West, North) => Ok("R"),
-                (West, East) => Ok("U"),
-                (West, South) => Ok("L"),
-                _ => Err(Error::InvalidRotation(old, new))
-            }
+        (Orthogonal(a), Orthogonal(b)) => match (a, b) {
+            (North, East) => Ok("R"),
+            (North, South) => Ok("U"),
+            (North, West) => Ok("L"),
+            (East, South) => Ok("R"),
+            (East, West) => Ok("U"),
+            (East, North) => Ok("L"),
+            (South, West) => Ok("R"),
+            (South, North) => Ok("U"),
+            (South, East) => Ok("L"),
+            (West, North) => Ok("R"),
+            (West, East) => Ok("U"),
+            (West, South) => Ok("L"),
+            _ => Err(Error::InvalidRotation(old, new)),
         },
-        (Diagonal(a), Diagonal(b)) => {
-            match (a,b) {
-                (NorthEast, SouthEast) => Ok("R"),
-                (NorthEast, SouthWest) => Ok("U"),
-                (NorthEast, NorthWest) => Ok("L"),
-                (SouthEast, SouthWest) => Ok("R"),
-                (SouthEast, NorthWest) => Ok("U"),
-                (SouthEast, NorthEast) => Ok("L"),
-                (SouthWest, NorthWest) => Ok("R"),
-                (SouthWest, NorthEast) => Ok("U"),
-                (SouthWest, SouthEast) => Ok("L"),
-                (NorthWest, NorthEast) => Ok("R"),
-                (NorthWest, SouthEast) => Ok("U"),
-                (NorthWest, SouthWest) => Ok("L"),
-                _ => Err(Error::InvalidRotation(old, new)) 
-            }
-        }
+        (Diagonal(a), Diagonal(b)) => match (a, b) {
+            (NorthEast, SouthEast) => Ok("R"),
+            (NorthEast, SouthWest) => Ok("U"),
+            (NorthEast, NorthWest) => Ok("L"),
+            (SouthEast, SouthWest) => Ok("R"),
+            (SouthEast, NorthWest) => Ok("U"),
+            (SouthEast, NorthEast) => Ok("L"),
+            (SouthWest, NorthWest) => Ok("R"),
+            (SouthWest, NorthEast) => Ok("U"),
+            (SouthWest, SouthEast) => Ok("L"),
+            (NorthWest, NorthEast) => Ok("R"),
+            (NorthWest, SouthEast) => Ok("U"),
+            (NorthWest, SouthWest) => Ok("L"),
+            _ => Err(Error::InvalidRotation(old, new)),
+        },
     }
 }
 
