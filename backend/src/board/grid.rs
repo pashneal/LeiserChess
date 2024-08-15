@@ -28,6 +28,18 @@ pub struct Grid {
     squares: [[Option<StandardPiece>; 8]; 8],
 }
 
+impl Board for Grid {
+    fn validate_board(&self) -> Result<(), Error> {
+        for row in self.squares.iter() {
+            for square in row.iter() {
+                if let Some(piece) = square {
+                    self.validate_piece(piece)?;
+                }
+            }
+        }
+        Ok(())
+    }
+}
 impl HumanReadable for Grid {}
 
 impl Indexable for Grid {

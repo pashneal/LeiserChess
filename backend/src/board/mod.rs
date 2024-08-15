@@ -16,7 +16,7 @@ pub enum Error {
     #[error("Invalid piece")]
     InvalidPiece,
     #[error("Cannot remove non existent piece from board")]
-    RemoveError,
+    RemoveEmptyError,
 }
 
 pub trait Board: Clone {
@@ -32,11 +32,14 @@ pub trait Parseable {
     fn to_string(&self) -> String;
 }
 
-pub trait HumanReadable: Parseable {
-    /// Converts a parsable object to a human readable format,
+pub trait HumanReadable: Parseable + Board{
+    /// Converts a parsable board to a human readable format,
     /// where . represents an empty square
     /// and the pieces are represented by their FEN notation
     fn human_readable(&self) -> String {
+        if self.validate_board().is_err() {
+            panic!("Invalid board");
+        }
         let fen = self.to_string();
         let mut result = String::new();
         for c in fen.chars() {
@@ -61,23 +64,23 @@ pub trait Indexable: OptimizedIndexable {
     /// Perform simple logical validations on the current piece
     fn validate_piece(&self, piece: &Self::Piece) -> Result<(), Error>;
 
-    fn get_piece(&self, position: &Self::Position) -> Result<Option<Self::Piece>, Error> {
+    fn get(&self, position: &Self::Position) -> Result<Option<Self::Piece>, Error> {
         self.validate_position(position)?;
         Ok(self.get_unchecked(position))
     }
 
-    fn set_piece(&mut self, position: &Self::Position, piece: Self::Piece) -> Result<(), Error> {
+    fn set(&mut self, position: &Self::Position, piece: Self::Piece) -> Result<(), Error> {
         self.validate_position(position)?;
         self.validate_piece(&piece)?;
         self.set_unchecked(position, piece);
         Ok(())
     }
 
-    fn remove_piece(&mut self, position: &Self::Position) -> Result<(), Error> {
+    fn remove(&mut self, position: &Self::Position) -> Result<(), Error> {
         self.validate_position(position)?;
-        let piece = self.get_piece(position)?;
+        let piece = self.get(position)?;
         if piece.is_none() {
-            return Err(Error::RemoveError);
+            return Err(Error::RemoveEmptyError);
         }
         self.remove_unchecked(position);
         Ok(())

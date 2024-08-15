@@ -1,7 +1,7 @@
 /// Theoretical upper bound on the number of actions that can be taken in a game.
 pub const MAX_ACTIONS: usize = 100;
 
-/// Theoretical upper bound on the number of board positions
+/// Theoretical upper bound on the number of board states
 /// that can be reached before a game terminates
 pub const MAX_HISTORY_LENGTH: usize = 400; 
 
