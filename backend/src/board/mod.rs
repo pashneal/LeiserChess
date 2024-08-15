@@ -13,8 +13,8 @@ pub enum Error {
     MoveError,
     #[error("Invalid board : {0}")]
     InvalidBoard(String),
-    #[error("Invalid position")]
-    InvalidPosition,
+    #[error("Invalid location")]
+    InvalidLocation,
     #[error("Invalid piece")]
     InvalidPiece,
     #[error("Cannot remove non existent piece from board")]
@@ -61,39 +61,39 @@ pub trait HumanReadable: Parseable + Board{
 }
 
 pub trait Indexable: OptimizedIndexable {
-    /// Perform simple logical validations on the current position
-    fn validate_position(&self, position: &Self::Position) -> Result<(), Error>;
+    /// Perform simple logical validations on the current location
+    fn validate_location(&self, location: &Self::Location) -> Result<(), Error>;
     /// Perform simple logical validations on the current piece
     fn validate_piece(&self, piece: &Self::Piece) -> Result<(), Error>;
 
-    fn get(&self, position: &Self::Position) -> Result<Option<Self::Piece>, Error> {
-        self.validate_position(position)?;
-        Ok(self.get_unchecked(position))
+    fn get(&self, location: &Self::Location) -> Result<Option<Self::Piece>, Error> {
+        self.validate_location(location)?;
+        Ok(self.get_unchecked(location))
     }
 
-    fn set(&mut self, position: &Self::Position, piece: Self::Piece) -> Result<(), Error> {
-        self.validate_position(position)?;
+    fn set(&mut self, location: &Self::Location, piece: Self::Piece) -> Result<(), Error> {
+        self.validate_location(location)?;
         self.validate_piece(&piece)?;
-        self.set_unchecked(position, piece);
+        self.set_unchecked(location, piece);
         Ok(())
     }
 
-    fn remove(&mut self, position: &Self::Position) -> Result<(), Error> {
-        self.validate_position(position)?;
-        let piece = self.get(position)?;
+    fn remove(&mut self, location: &Self::Location) -> Result<(), Error> {
+        self.validate_location(location)?;
+        let piece = self.get(location)?;
         if piece.is_none() {
             return Err(Error::RemoveEmptyError);
         }
-        self.remove_unchecked(position);
+        self.remove_unchecked(location);
         Ok(())
     }
 }
 
 pub trait OptimizedIndexable {
-    type Position;
+    type Location;
     type Piece;
 
-    fn get_unchecked(&self, position: &Self::Position) -> Option<Self::Piece>;
-    fn set_unchecked(&mut self, position: &Self::Position, piece: Self::Piece);
-    fn remove_unchecked(&mut self, position: &Self::Position);
+    fn get_unchecked(&self, location: &Self::Location) -> Option<Self::Piece>;
+    fn set_unchecked(&mut self, location: &Self::Location, piece: Self::Piece);
+    fn remove_unchecked(&mut self, location: &Self::Location);
 }

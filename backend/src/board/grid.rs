@@ -3,18 +3,18 @@ use super::*;
 use regex::Regex;
 use crate::constants::*;
 
-pub struct GridPosition {
+pub struct GridLocation {
     x: usize,
     y: usize,
 }
 
-impl Parseable for GridPosition {
+impl Parseable for GridLocation {
     fn from_str(fen : &str) -> Self {
         let re = Regex::new(r"([a-h])([1-8])").unwrap();
         let captures = re.captures(fen).unwrap();
         let x = captures.get(1).unwrap().as_str().chars().next().unwrap() as usize - 'a' as usize;
         let y = captures.get(2).unwrap().as_str().parse::<usize>().unwrap() - 1;
-        GridPosition { x, y }
+        GridLocation { x, y }
     }
 
     fn to_string(&self) -> String {
@@ -52,9 +52,9 @@ impl Board for LeiserChessGrid {
 impl HumanReadable for LeiserChessGrid {}
 
 impl Indexable for LeiserChessGrid {
-    fn validate_position(&self, position: &GridPosition) -> Result<(), Error> {
-        if position.x > 7 || position.y > 7 {
-            return Err(Error::InvalidPosition);
+    fn validate_location(&self, location: &GridLocation) -> Result<(), Error> {
+        if location.x > 7 || location.y > 7 {
+            return Err(Error::InvalidLocation);
         }
         Ok(())
     }
@@ -71,20 +71,20 @@ impl Indexable for LeiserChessGrid {
 impl OptimizedIndexable for LeiserChessGrid {
 
     type Piece = StandardPiece;
-    type Position = GridPosition;
+    type Location = GridLocation;
 
-    fn get_unchecked(&self, position: &GridPosition) -> Option<StandardPiece> {
-        let GridPosition { x, y } = *position;
+    fn get_unchecked(&self, location: &GridLocation) -> Option<StandardPiece> {
+        let GridLocation { x, y } = *location;
         self.squares[y][x]
     }
 
-    fn set_unchecked(&mut self, position: &GridPosition, piece: StandardPiece) {
-        let GridPosition { x, y } = *position;
+    fn set_unchecked(&mut self, location: &GridLocation, piece: StandardPiece) {
+        let GridLocation { x, y } = *location;
         self.squares[y][x] = Some(piece);
     }
 
-    fn remove_unchecked(&mut self, position: &GridPosition) {
-        let GridPosition { x, y } = *position;
+    fn remove_unchecked(&mut self, location: &GridLocation) {
+        let GridLocation { x, y } = *location;
         self.squares[y][x] = None;
     }
 }
@@ -201,11 +201,11 @@ pub mod grid_tests {
     }
 
     #[test]
-    pub fn grid_position_parsing() {
-        let position = GridPosition::from_str("a1");
-        assert_eq!(position.to_string(), "a1");
-        let position = GridPosition::from_str("h8");
-        assert_eq!(position.to_string(), "h8");
+    pub fn grid_location_parsing() {
+        let location = GridLocation::from_str("a1");
+        assert_eq!(location.to_string(), "a1");
+        let location = GridLocation::from_str("h8");
+        assert_eq!(location.to_string(), "h8");
     }
 
 }

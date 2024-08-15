@@ -4,15 +4,15 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("Invalid action")]
-    InvalidAction,
+    #[error("Invalid action {0}")]
+    InvalidAction(String),
 }
 pub mod standard;
 
 pub trait Action <T : Indexable> : OptimizedAction <T>{
-    fn validate(&self) -> Result<(), Error>;
+    fn validate(&self, board : &T) -> Result<(), Error>;
     fn apply(&self, board: &mut T) ->  Result<(), Error> {
-        self.validate()?;
+        self.validate(board)?;
         self.apply_unchecked(board);
         Ok(())
     }
