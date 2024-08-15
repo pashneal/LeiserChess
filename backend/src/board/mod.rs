@@ -15,36 +15,20 @@ pub enum Error {
     InvalidPosition,
     #[error("Invalid piece")]
     InvalidPiece,
+    #[error("Cannot remove non existent piece from board")]
+    RemoveError,
 }
 
-pub trait Board: OptimizedBoard + Clone {
+pub trait Board: Clone {
     /// Perform simple logical validations on the current board
     fn validate_board(&self) -> Result<(), Error>;
-    /// Perform simple logical validations on the board
-    /// after applying any given action
-    fn validate_difference(&self, old_board: &Self) -> Result<(), Error>;
-
-    /// Given a valid action, apply it to the board and
-    /// perform checks to ensure validity of the board
-    fn apply_action(&mut self, action: &impl Action) -> Result<(), Error> {
-        self.validate_board()?;
-
-        let old_board = self.clone();
-        self.apply_action_unchecked(action);
-        self.validate_difference(&old_board)?;
-        Ok(())
-    }
-}
-
-pub trait OptimizedBoard {
-    fn apply_action_unchecked(&mut self, action: &impl Action);
 }
 
 pub trait Parseable {
-    /// Given a FEN string, create a new board
+    /// Given a string, create a unique representation of the object
     fn from_str(fen: &str) -> Self;
 
-    /// Convert the current board to a FEN string
+    /// Convert the current representation to a string
     fn to_string(&self) -> String;
 }
 
@@ -91,6 +75,10 @@ pub trait Indexable: OptimizedIndexable {
 
     fn remove_piece(&mut self, position: &Self::Position) -> Result<(), Error> {
         self.validate_position(position)?;
+        let piece = self.get_piece(position)?;
+        if piece.is_none() {
+            return Err(Error::RemoveError);
+        }
         self.remove_unchecked(position);
         Ok(())
     }

@@ -1,9 +1,26 @@
 use crate::parser::*;
 use super::*;
+use regex::Regex;
 
-pub struct Position {
+pub struct GridPosition {
     x: usize,
     y: usize,
+}
+
+impl Parseable for GridPosition {
+    fn from_str(fen : &str) -> Self {
+        let re = Regex::new(r"([a-h])([1-8])").unwrap();
+        let captures = re.captures(fen).unwrap();
+        let x = captures.get(1).unwrap().as_str().chars().next().unwrap() as usize - 'a' as usize;
+        let y = captures.get(2).unwrap().as_str().parse::<usize>().unwrap() - 1;
+        GridPosition { x, y }
+    }
+
+    fn to_string(&self) -> String {
+        let x = (self.x as u8 + 'a' as u8) as char;
+        let y = (self.y + 1).to_string();
+        format!("{}{}", x, y)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -14,7 +31,7 @@ pub struct Grid {
 impl HumanReadable for Grid {}
 
 impl Indexable for Grid {
-    fn validate_position(&self, position: &Position) -> Result<(), Error> {
+    fn validate_position(&self, position: &GridPosition) -> Result<(), Error> {
         if position.x > 7 || position.y > 7 {
             return Err(Error::InvalidPosition);
         }
@@ -33,20 +50,20 @@ impl Indexable for Grid {
 impl OptimizedIndexable for Grid {
 
     type Piece = StandardPiece;
-    type Position = Position;
+    type Position = GridPosition;
 
-    fn get_unchecked(&self, position: &Position) -> Option<StandardPiece> {
-        let Position { x, y } = *position;
+    fn get_unchecked(&self, position: &GridPosition) -> Option<StandardPiece> {
+        let GridPosition { x, y } = *position;
         self.squares[y][x]
     }
 
-    fn set_unchecked(&mut self, position: &Position, piece: StandardPiece) {
-        let Position { x, y } = *position;
+    fn set_unchecked(&mut self, position: &GridPosition, piece: StandardPiece) {
+        let GridPosition { x, y } = *position;
         self.squares[y][x] = Some(piece);
     }
 
-    fn remove_unchecked(&mut self, position: &Position) {
-        let Position { x, y } = *position;
+    fn remove_unchecked(&mut self, position: &GridPosition) {
+        let GridPosition { x, y } = *position;
         self.squares[y][x] = None;
     }
 }
@@ -122,6 +139,7 @@ impl Parseable for Grid {
     }
 }
 
+
 #[cfg(test)]
 pub mod grid_tests {
     use super::*;
@@ -159,6 +177,14 @@ pub mod grid_tests {
             kind: Kind::Monarch,
             direction: Direction::Diagonal(Diagonal::NorthEast),
         }), Err(_)));
+    }
+
+    #[test]
+    pub fn grid_position_parsing() {
+        let position = GridPosition::from_str("a1");
+        assert_eq!(position.to_string(), "a1");
+        let position = GridPosition::from_str("h8");
+        assert_eq!(position.to_string(), "h8");
     }
 
 }

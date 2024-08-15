@@ -33,6 +33,57 @@ pub enum Direction {
     Orthogonal(Orthogonal),
 }
 
+/// Given a valid two directions whose angle is 90, 180, or 270 degrees,
+/// return a convention string for the rotation
+///
+/// "R" - rotate old right by 90 degrees to get new
+/// "U" - rotate old by 180 degrees to get new
+/// "L" - rotate old left by 90 degrees to get new
+pub fn rotation_str(old: Direction, new: Direction) -> &'static str{
+    use Direction::*;
+    use self::Orthogonal::*;
+    use self::Diagonal::*;
+
+    match (old, new) {
+        (Diagonal(_), Orthogonal(_)) => panic!("Invalid rotation"),
+        (Orthogonal(_), Diagonal(_)) => panic!("Invalid rotation"),
+        (Orthogonal(a), Orthogonal(b)) => {
+            match (a, b) {
+                (North, East) => "R",
+                (North, South) => "U",
+                (North, West) => "L",
+                (East, South) => "R",
+                (East, West) => "U",
+                (East, North) => "L",
+                (South, West) => "R",
+                (South, North) => "U",
+                (South, East) => "L",
+                (West, North) => "R",
+                (West, East) => "U",
+                (West, South) => "L",
+                _ => panic!("Cannot rotate to self {:?}", (a,b)),
+            }
+        },
+        (Diagonal(a), Diagonal(b)) => {
+            match (a,b) {
+                (NorthEast, SouthEast) => "R",
+                (NorthEast, SouthWest) => "U",
+                (NorthEast, NorthWest) => "L",
+                (SouthEast, SouthWest) => "R",
+                (SouthEast, NorthWest) => "U",
+                (SouthEast, NorthEast) => "L",
+                (SouthWest, NorthWest) => "R",
+                (SouthWest, NorthEast) => "U",
+                (SouthWest, SouthEast) => "L",
+                (NorthWest, NorthEast) => "R",
+                (NorthWest, SouthEast) => "U",
+                (NorthWest, SouthWest) => "L",
+                _ => panic!("Cannot rotate to self {:?}", (a,b)),
+            }
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 pub struct StandardPiece {
     pub color: Color,
