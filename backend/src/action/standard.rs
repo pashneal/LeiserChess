@@ -40,6 +40,14 @@ impl Action<LeiserChessGrid> for StandardAction {
             return Err(Error::InvalidAction("Too many victims".to_string()));
         }
 
+    
+        let source_piece = board
+            .get(&self.source)
+            .expect("Unable to get source location");
+        if source_piece.is_none() {
+            return Err(Error::InvalidAction("No piece at source location".to_string()));
+        }
+    
         let square = board
             .get(&self.destination)
             .expect("Unable to get destination location");
