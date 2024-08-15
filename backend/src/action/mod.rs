@@ -11,7 +11,7 @@ pub mod standard;
 
 pub trait Action<T: Indexable>: OptimizedAction<T> {
     /// Perform simple logical validations on the current board
-    /// returns error if the action is invalid
+    /// returns error if able to tell that the action is invalid
     fn validate(&self, board: &T) -> Result<(), Error>;
 
     fn apply(&self, board: &mut T) -> Result<(), Error> {

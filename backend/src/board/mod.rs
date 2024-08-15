@@ -23,6 +23,7 @@ pub enum Error {
 
 pub trait Board: Clone {
     /// Perform simple logical validations on the current board
+    /// returns error if able to tell that the board is invalid
     fn validate_board(&self) -> Result<(), Error>;
 }
 
@@ -62,8 +63,11 @@ pub trait HumanReadable: Parseable + Board {
 
 pub trait Indexable: OptimizedIndexable {
     /// Perform simple logical validations on the current location
+    /// returns error if able to tell that the location is invalid
     fn validate_location(&self, location: &Self::Location) -> Result<(), Error>;
+
     /// Perform simple logical validations on the current piece
+    /// returns error if able to tell that the piece is invalid
     fn validate_piece(&self, piece: &Self::Piece) -> Result<(), Error>;
 
     fn get(&self, location: &Self::Location) -> Result<Option<Self::Piece>, Error> {
