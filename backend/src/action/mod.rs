@@ -10,7 +10,10 @@ pub enum Error {
 pub mod standard;
 
 pub trait Action <T : Indexable> : OptimizedAction <T>{
+    /// Perform simple logical validations on the current board
+    /// returns error if the action is invalid
     fn validate(&self, board : &T) -> Result<(), Error>;
+
     fn apply(&self, board: &mut T) ->  Result<(), Error> {
         self.validate(board)?;
         self.apply_unchecked(board);

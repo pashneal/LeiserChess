@@ -29,17 +29,36 @@ impl StandardAction {
 }
 
 impl Action <LeiserChessGrid> for StandardAction {
-    /// TODO: Validation rules
-    /// -> victims cannot exceed MAX_VICTIMS
-    /// -> piece must cannot shove from lower qi square to higher qi square
-    /// -> monarchs cannot be shoved 
-    /// -> if there is a rotation, source must be the same as the destination
     fn validate(&self, board : &LeiserChessGrid) -> Result<(), Error> {
         
         if self.victims.len() > MAX_VICTIMS {
             return Err(Error::InvalidAction("Too many victims".to_string()));
         }
-        let location = board.get(&self.source).expect("Unable to get source location");
+
+        let square = board.get(&self.destination).expect("Unable to get destination location");
+        if let Some(piece) = square {
+            if matches!(piece.kind, Kind::Monarch) {
+                return Err(Error::InvalidAction("Monarchs cannot be shoved".to_string()));
+            }
+
+            // TODO: make sure to check if rules specify 
+            // whether pieces can be shoved if they are equal
+            if self.source.qi() <= self.destination.qi() {
+                return Err(Error::InvalidAction("Must shove from higher qi square".to_string()));
+            }
+            
+        }
+        if let Some(_) = self.new_direction {
+            if self.source != self.destination{
+                return Err(Error::InvalidAction("Source location and destination location must be the same for a rotation".to_string()));
+            }
+        } else {
+            if !self.source.is_adjacent(&self.destination) {
+                return Err(Error::InvalidAction("Source location must be adjacent to destination location".to_string()));
+            }
+        }
+
+
         Ok(())
     }
 }

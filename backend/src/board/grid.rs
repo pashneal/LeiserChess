@@ -4,8 +4,31 @@ use regex::Regex;
 use crate::constants::*;
 
 pub struct GridLocation {
-    x: usize,
-    y: usize,
+    pub x: usize,
+    pub y: usize,
+}
+
+impl GridLocation {
+    /// Returns true if the two locations are adjacent,
+    /// note: a location is not adjacent to itself
+    pub fn is_adjacent(&self, other: &GridLocation) -> bool {
+        let dx = self.x as i32 - other.x as i32;
+        let dy = self.y as i32 - other.y as i32;
+        (dx.abs() <= 1) && (dy.abs() <= 1) && (dx.abs() + dy.abs() > 0)
+    }
+
+    /// Qi of a location according to LeiserChess rules
+    pub fn qi(&self) -> i32 {
+        let x = ( self.x * 2 ) as i32;
+        let y = ( self.y * 2 ) as i32;
+        (x - 7) * (x - 7) + (y - 7) * (y - 7)
+    }
+}
+
+impl PartialEq for GridLocation {
+    fn eq(&self, other: &Self) -> bool {
+        self.x == other.x && self.y == other.y
+    }
 }
 
 impl Parseable for GridLocation {
